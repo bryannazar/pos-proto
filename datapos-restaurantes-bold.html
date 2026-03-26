@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data POS · Restaurantes · Reportería</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* ── BRAND ── */
+  --bold-navy:         #1B2A5C;
+  --bold-navy-light:   #2D3E7A;
+  --bold-navy-muted:   #E8EBF5;
+  --bold-red:          #E83A5A;
+  --bold-red-light:    #FCE8ED;
+  --bold-gold:         #F5A623;
+  --bold-gold-light:   #FEF3DC;
+  --bold-blue:         #4A90D9;
+  --bold-blue-light:   #E8F2FC;
+  --bold-green:        #27AE60;
+  --bold-green-light:  #E6F7EE;
+
+  /* ── NEUTRALS ── */
+  --gray-50:    #F4F6FB;
+  --gray-100:   #E9ECF4;
+  --gray-200:   #D4D9E8;
+  --gray-300:   #B0B9CE;
+  --gray-400:   #8A92A6;
+  --gray-500:   #636B7D;
+  --gray-600:   #4A5166;
+  --gray-900:   #1B2A5C;
+
+  /* ── TYPOGRAPHY ── */
+  --font:       'Plus Jakarta Sans', system-ui, sans-serif;
+  --mono:       'Plus Jakarta Sans', monospace;
+  --text-xs:    11px;
+  --text-sm:    12px;
+  --text-base:  14px;
+  --text-md:    15px;
+  --text-lg:    18px;
+  --text-xl:    22px;
+  --text-2xl:   28px;
+
+  /* ── BORDER RADIUS ── */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-pill: 999px;
+
+  /* ── SHADOWS ── */
+  --shadow-sm:  0 1px 3px rgba(27,42,92,0.06), 0 1px 2px rgba(27,42,92,0.04);
+  --shadow-md:  0 4px 12px rgba(27,42,92,0.09), 0 2px 4px rgba(27,42,92,0.05);
+  --shadow-lg:  0 8px 24px rgba(27,42,92,0.12), 0 4px 8px rgba(27,42,92,0.06);
+
+  /* ── BORDERS ── */
+  --border-default:  1.5px solid var(--gray-200);
+  --border-strong:   1.5px solid var(--gray-300);
+  --border-navy:     2px solid var(--bold-navy);
+}
+body{font-family:var(--font);background:var(--gray-50);color:var(--bold-navy);min-height:100vh;display:flex;font-size:var(--text-base);line-height:1.5}
+
+/* SIDEBAR */
+.sidebar{width:228px;min-height:100vh;background:#fff;border-right:var(--border-default);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:100}
+.sb-brand{padding:18px 16px 14px;border-bottom:var(--border-default)}
+.sb-logo{display:flex;align-items:center;gap:9px}
+.sb-icon{width:31px;height:31px;background:var(--bold-navy);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:-.5px}
+.sb-name{font-size:14px;font-weight:700;color:var(--bold-navy);letter-spacing:-0.02em}
+.sb-tag{font-size:var(--text-xs);color:var(--bold-navy);margin-top:3px;padding-left:40px;font-weight:600;letter-spacing:.3px;opacity:.7}
+.sb-nav{padding:10px 8px;flex:1;overflow-y:auto}
+.sb-lbl{font-size:var(--text-xs);font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.8px;padding:10px 8px 4px}
+.nb{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-md);cursor:pointer;color:var(--gray-500);font-size:var(--text-sm);border:none;background:none;width:100%;text-align:left;transition:background .15s,color .15s;margin-bottom:1px;font-family:var(--font);font-weight:500}
+.nb:hover{background:var(--gray-50);color:var(--bold-navy)}
+.nb.active{background:var(--bold-blue-light);color:var(--bold-navy);font-weight:600}
+.nb svg{width:15px;height:15px;flex-shrink:0;stroke-width:1.8;opacity:.65}
+.nb.active svg{opacity:1}
+.sb-sep{height:1px;background:var(--gray-200);margin:6px 8px}
+.sb-footer{padding:12px 12px;border-top:var(--border-default)}
+.sb-rest{display:flex;align-items:center;gap:9px}
+.sb-av{width:33px;height:33px;border-radius:8px;background:var(--bold-navy);display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);font-weight:700;color:#fff;flex-shrink:0}
+.sb-rname{font-size:var(--text-sm);font-weight:600;color:var(--bold-navy);line-height:1.25}
+.sb-rrole{font-size:var(--text-xs);color:var(--gray-400)}
+
+/* MAIN */
+.main{margin-left:228px;flex:1;min-height:100vh;overflow-y:auto}
+
+/* PAGE HEADER */
+.ph{padding:15px 26px;border-bottom:var(--border-default);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(244,246,251,0.92);z-index:10;backdrop-filter:blur(12px)}
+.ph-title{font-size:var(--text-md);font-weight:700;color:var(--bold-navy);line-height:1;letter-spacing:-0.02em}
+.ph-sub{font-size:var(--text-sm);color:var(--gray-400);margin-top:2px}
+.ph-right{display:flex;align-items:center;gap:8px}
+.live-pill{display:flex;align-items:center;gap:6px;background:var(--bold-green-light);border:1.5px solid rgba(39,174,96,.25);border-radius:var(--radius-pill);padding:4px 11px;font-size:var(--text-sm);font-weight:600;color:var(--bold-green)}
+.live-dot{width:7px;height:7px;background:var(--bold-green);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.pill-btn{display:flex;align-items:center;gap:6px;background:#fff;border:var(--border-default);border-radius:var(--radius-md);padding:5px 12px;font-size:var(--text-sm);color:var(--gray-500);cursor:pointer;font-family:var(--font);font-weight:500;transition:all .15s}
+.pill-btn:hover{border-color:var(--gray-300);color:var(--bold-navy)}
+.pill-btn svg{width:13px;height:13px;stroke-width:1.8;opacity:.6}
+
+/* FILTER TABS */
+.ftabs{display:flex;gap:3px;background:var(--gray-100);border-radius:var(--radius-md);padding:3px;border:var(--border-default)}
+.ft{border:none;background:none;padding:5px 13px;border-radius:8px;font-size:var(--text-sm);color:var(--gray-500);cursor:pointer;font-family:var(--font);transition:all .15s;font-weight:500}
+.ft.active{background:var(--bold-navy);color:#fff;font-weight:600}
+
+/* CONTENT */
+.pc{padding:22px 26px 40px}
+.slbl{font-size:var(--text-xs);font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.7px;margin-bottom:11px}
+
+/* GRIDS */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:16px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:16px}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:13px;margin-bottom:16px}
+
+/* CARDS */
+.card{background:#fff;border:var(--border-default);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow-sm)}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-t{font-size:var(--text-sm);font-weight:600;color:var(--gray-500)}
+.card-action{font-size:var(--text-xs);color:var(--gray-400);cursor:pointer;transition:color .15s}
+.card-action:hover{color:var(--bold-navy)}
+
+/* KPI CARDS */
+.kpi{background:#fff;border:var(--border-default);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow-sm)}
+.kpi.hi-a{border-color:rgba(27,42,92,.2);background:var(--bold-navy-muted)}
+.kpi.hi-g{border-color:rgba(39,174,96,.25);background:var(--bold-green-light)}
+.kpi.hi-b{border-color:rgba(74,144,217,.25);background:var(--bold-blue-light)}
+.kpi.hi-r{border-color:rgba(232,58,90,.2);background:var(--bold-red-light)}
+.kpi-lbl{font-size:var(--text-xs);color:var(--gray-400);margin-bottom:7px;display:flex;align-items:center;gap:5px;font-weight:500}
+.kpi-val{font-family:var(--font);font-size:23px;font-weight:700;color:var(--bold-navy);line-height:1;margin-bottom:5px;letter-spacing:-.03em}
+.kpi-val.sm{font-size:18px}
+.kpi-ch{font-size:var(--text-sm);display:flex;align-items:center;gap:4px}
+.up{color:var(--bold-green);font-weight:600}.dn{color:var(--bold-red);font-weight:600}.ne{color:var(--gray-400)}
+.kpi-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi-icon svg{width:16px;height:16px;stroke-width:1.8}
+.kpi-icon.a{background:var(--bold-navy-muted);color:var(--bold-navy)}
+.kpi-icon.g{background:var(--bold-green-light);color:var(--bold-green)}
+.kpi-icon.b{background:var(--bold-blue-light);color:var(--bold-blue)}
+.kpi-icon.r{background:var(--bold-red-light);color:var(--bold-red)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;padding:7px 10px;font-size:var(--text-xs);font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;border-bottom:var(--border-default)}
+.tbl th.r{text-align:right}
+.tbl td{padding:9px 10px;color:var(--gray-500);border-bottom:1.5px solid var(--gray-100);font-size:var(--text-sm);vertical-align:middle}
+.tbl td.r{text-align:right;font-family:var(--font);font-size:var(--text-sm);font-weight:500}
+.tbl td.bold{color:var(--bold-navy);font-weight:600}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(27,42,92,.02)}
+
+/* BADGES */
+.bd{display:inline-flex;align-items:center;padding:2px 8px;border-radius:var(--radius-pill);font-size:var(--text-xs);font-weight:600}
+.bd-star{background:var(--bold-gold-light);color:#B07000}
+.bd-cow{background:var(--bold-green-light);color:var(--bold-green)}
+.bd-q{background:var(--bold-blue-light);color:var(--bold-blue)}
+.bd-dog{background:var(--bold-red-light);color:var(--bold-red)}
+
+/* HEATMAP */
+.hm-wrap{overflow-x:auto;padding-bottom:4px}
+.hm{display:grid;grid-template-columns:38px repeat(7,1fr);gap:3px;min-width:480px}
+.hm-lbl{display:flex;align-items:center;justify-content:flex-end;padding-right:7px;color:var(--gray-400);font-size:var(--text-xs);height:26px}
+.hm-hdr{display:flex;align-items:center;justify-content:center;color:var(--gray-400);font-size:var(--text-xs);font-weight:600;height:22px}
+.hm-cell{height:26px;border-radius:var(--radius-sm);cursor:default;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;transition:opacity .15s;color:transparent}
+.hm-cell:hover{opacity:.85;color:var(--bold-navy)}
+
+/* PROGRESS */
+.pbar{height:3px;background:var(--gray-200);border-radius:2px;margin-top:5px;overflow:hidden}
+.pfill{height:100%;border-radius:2px}
+
+/* VIEW CONTROL */
+.view{display:none}
+.view.active{display:block}
+
+/* LEGEND ROW */
+.legend-row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:12px}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:var(--text-sm);color:var(--gray-500)}
+.leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+/* DIVIDER */
+.div{height:1px;background:var(--gray-200);margin:16px 0}
+
+/* METER BARS (for payment methods) */
+.meter-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.meter-lbl{font-size:var(--text-sm);color:var(--gray-500);width:130px;flex-shrink:0}
+.meter-bar{flex:1;height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden}
+.meter-fill{height:100%;border-radius:3px}
+.meter-val{font-family:var(--font);font-size:var(--text-sm);color:var(--gray-500);width:70px;text-align:right;flex-shrink:0;font-weight:500}
+
+/* RANK NUMBER */
+.rank{width:22px;height:22px;border-radius:50%;background:var(--bold-navy-muted);display:inline-flex;align-items:center;justify-content:center;font-size:var(--text-xs);font-weight:700;color:var(--bold-navy);flex-shrink:0}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:3px}
+
+/* ACTION BAR (export / print) */
+.action-bar{display:flex;align-items:center;gap:8px;padding:12px 26px;border-bottom:var(--border-default);background:rgba(244,246,251,.92);backdrop-filter:blur(8px)}
+.action-bar-left{flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.action-bar-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ab-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:600;font-family:var(--font);cursor:pointer;border:var(--border-default);background:#fff;color:var(--gray-500);transition:all .15s}
+.ab-btn:hover{border-color:var(--gray-300);color:var(--bold-navy);box-shadow:var(--shadow-sm)}
+.ab-btn:active{transform:scale(0.97)}
+.ab-btn svg{width:13px;height:13px;stroke-width:1.8;flex-shrink:0}
+.ab-btn.excel{border-color:rgba(39,174,96,.3);color:var(--bold-green);background:var(--bold-green-light)}
+.ab-btn.excel:hover{background:rgba(39,174,96,.15)}
+.ab-btn.print{border-color:var(--gray-200);color:var(--gray-500)}
+.filt-input{background:#fff;border:var(--border-default);border-radius:var(--radius-md);padding:5px 11px;font-size:var(--text-sm);color:var(--bold-navy);font-family:var(--font);outline:none;height:32px;transition:border-color .15s}
+.filt-input:focus{border-color:var(--bold-blue)}
+.filt-select{background:#fff;border:var(--border-default);border-radius:var(--radius-md);padding:5px 11px;font-size:var(--text-sm);color:var(--gray-500);font-family:var(--font);outline:none;height:32px;cursor:pointer;transition:border-color .15s}
+.filt-select:focus{border-color:var(--bold-blue)}
+.filt-lbl{font-size:var(--text-sm);color:var(--gray-400);white-space:nowrap;font-weight:500}
+
+/* STATUS BADGES */
+.st{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:var(--radius-pill);font-size:var(--text-xs);font-weight:600;white-space:nowrap}
+.st::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.st-paid{background:var(--bold-green-light);color:var(--bold-green)}.st-paid::before{background:var(--bold-green)}
+.st-pend{background:var(--bold-gold-light);color:#B07000}.st-pend::before{background:var(--bold-gold)}
+.st-void{background:var(--bold-red-light);color:var(--bold-red)}.st-void::before{background:var(--bold-red)}
+.st-open{background:var(--bold-blue-light);color:var(--bold-blue)}.st-open::before{background:var(--bold-blue)}
+.st-closed{background:var(--gray-100);color:var(--gray-400)}.st-closed::before{background:var(--gray-400)}
+.st-partial{background:var(--bold-gold-light);color:#B07000}.st-partial::before{background:var(--bold-gold)}
+
+/* TABLE SCROLL WRAPPER */
+.tbl-scroll{overflow-x:auto;margin:0 -1px}
+.tbl-scroll .tbl td,.tbl-scroll .tbl th{white-space:nowrap}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:11px 0 0;margin-top:4px;border-top:var(--border-default)}
+.pg-info{font-size:var(--text-sm);color:var(--gray-400)}
+.pg-btns{display:flex;gap:3px}
+.pg-btn{width:28px;height:28px;border-radius:var(--radius-sm);border:var(--border-default);background:#fff;color:var(--gray-500);font-size:var(--text-sm);cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.pg-btn:hover{background:var(--gray-50);color:var(--bold-navy);border-color:var(--gray-300)}
+.pg-btn.cur{background:var(--bold-navy);color:#fff;border-color:var(--bold-navy);font-weight:700}
+
+/* SUMMARY TOTALS ROW */
+.tbl tr.total-row td{background:var(--bold-navy-muted);color:var(--bold-navy);font-weight:700;border-top:2px solid var(--bold-navy)}
+
+/* OCUPACION TIMELINE DOT */
+.peak-badge{display:inline-flex;align-items:center;gap:5px;background:var(--bold-red-light);border:1.5px solid rgba(232,58,90,.2);border-radius:var(--radius-sm);padding:3px 9px;font-size:var(--text-xs);color:var(--bold-red);font-weight:600}
+
+/* SPLIT BAR (propinas) */
+.split-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1.5px solid var(--gray-100)}
+.split-row:last-child{border-bottom:none}
+.split-name{font-size:var(--text-base);color:var(--bold-navy);font-weight:600;width:110px;flex-shrink:0}
+.split-bar{flex:1;height:8px;background:var(--gray-200);border-radius:4px;overflow:hidden}
+.split-fill{height:100%;border-radius:4px;background:var(--bold-navy)}
+.split-amt{font-family:var(--font);font-size:var(--text-sm);color:var(--bold-navy);font-weight:700;width:90px;text-align:right;flex-shrink:0}
+.split-pct{font-size:var(--text-xs);color:var(--gray-400);width:36px;text-align:right;flex-shrink:0;font-weight:600}
+
+/* TOTAL HIGHLIGHT */
+.total-box{background:var(--bold-navy-muted);border:1.5px solid rgba(27,42,92,.2);border-radius:var(--radius-md);padding:13px 16px;display:flex;align-items:center;justify-content:space-between}
+.total-box .lbl{font-size:var(--text-sm);color:var(--gray-500);font-weight:500}
+.total-box .val{font-family:var(--font);font-size:20px;font-weight:700;color:var(--bold-navy)}
+
+/* CHIP */
+.chip{font-size:var(--text-xs);padding:2px 8px;border-radius:var(--radius-pill);font-weight:600;display:inline-flex;align-items:center}
+.chip-g{background:var(--bold-green-light);color:var(--bold-green)}
+.chip-r{background:var(--bold-red-light);color:var(--bold-red)}
+.chip-a{background:var(--bold-navy-muted);color:var(--bold-navy)}
+
+/* CANVAS wrapper */
+.ch-wrap{position:relative;width:100%}
+
+/* QUADRANT labels */
+.q-labels{position:relative;pointer-events:none;height:0}
+.ql{position:absolute;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;opacity:.45}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">
+      <div class="sb-icon">DP</div>
+      <div class="sb-name">Data POS</div>
+    </div>
+    <div class="sb-tag">▲ Vertical Restaurantes</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-lbl">Reportería</div>
+    <button class="nb active" data-target="dashboard" onclick="showView('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button class="nb" data-target="menu" onclick="showView('menu')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+      Ingeniería de Menú
+    </button>
+    <button class="nb" data-target="ops" onclick="showView('ops')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Rendimiento Operacional
+    </button>
+    <button class="nb" data-target="fin" onclick="showView('fin')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+      Resumen Financiero
+    </button>
+    <div class="sb-sep"></div>
+    <div class="sb-lbl">Reportes detallados</div>
+    <button class="nb" data-target="ventas" onclick="showView('ventas')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Ventas
+    </button>
+    <button class="nb" data-target="ocupacion" onclick="showView('ocupacion')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Ocupación y Tiempos
+    </button>
+    <button class="nb" data-target="propinas" onclick="showView('propinas')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      Propinas y Recaudo
+    </button>
+    <div class="sb-sep"></div>
+    <div class="sb-lbl">Módulo</div>
+    <button class="nb" style="opacity:.45;cursor:default" onclick="void(0)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Volver a Retail
+    </button>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-rest">
+      <div class="sb-av">LB</div>
+      <div>
+        <div class="sb-rname">La Burguesía</div>
+        <div class="sb-rrole">Admin · Bogotá, CO</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+<!-- ============================================================ VIEW: DASHBOARD ============================================================ -->
+<div id="view-dashboard" class="view active">
+  <div class="ph">
+    <div>
+      <div class="ph-title">Resumen del Día</div>
+      <div class="ph-sub">Sábado, 25 de marzo de 2026</div>
+    </div>
+    <div class="ph-right">
+      <div class="live-pill"><div class="live-dot"></div>En vivo</div>
+      <button class="pill-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Hoy
+      </button>
+    </div>
+  </div>
+  <div class="pc">
+
+    <!-- EN VIVO -->
+    <div class="slbl">En vivo · Actualizado hace 34 seg</div>
+    <div class="g4">
+      <div class="kpi hi-a">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="kpi-lbl">Ventas del día</div>
+          <div class="kpi-icon a">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+        </div>
+        <div class="kpi-val" id="kv-sales">$4.287.500</div>
+        <div class="kpi-ch"><span class="up">↑ 18.3%</span><span class="ne">vs ayer</span></div>
+      </div>
+      <div class="kpi hi-g">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="kpi-lbl">Ticket promedio</div>
+          <div class="kpi-icon g">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
+        </div>
+        <div class="kpi-val">$43.800</div>
+        <div class="kpi-ch"><span class="up">↑ 5.2%</span><span class="ne">vs últimos 30 días</span></div>
+      </div>
+      <div class="kpi hi-b">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="kpi-lbl">Mesas ocupadas</div>
+          <div class="kpi-icon b">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+        </div>
+        <div class="kpi-val" id="kv-tables">9 / 15</div>
+        <div class="kpi-ch"><span style="color:var(--bold-blue);font-weight:600">60% ocupación</span></div>
+      </div>
+      <div class="kpi hi-r">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="kpi-lbl">Pedidos en cocina</div>
+          <div class="kpi-icon r">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          </div>
+        </div>
+        <div class="kpi-val" id="kv-orders">7 activos</div>
+        <div class="kpi-ch"><span class="ne">2 demorados (&gt;18 min)</span></div>
+      </div>
+    </div>
+
+    <!-- KPIs SECUNDARIOS -->
+    <div class="slbl">Métricas del día</div>
+    <div class="g4" style="margin-bottom:20px">
+      <div class="kpi">
+        <div class="kpi-lbl">Rotación de mesas</div>
+        <div class="kpi-val sm">3.2×</div>
+        <div class="kpi-ch ne">Meta: 3.5×</div>
+        <div class="pbar"><div class="pfill" style="width:91%;background:var(--bold-navy)"></div></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Producto más vendido</div>
+        <div class="kpi-val sm" style="font-family:var(--font);font-size:15px;margin-top:2px">Pizza Pepperoni</div>
+        <div class="kpi-ch ne">14 unidades hoy</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Hora pico hoy</div>
+        <div class="kpi-val sm">1:00 PM</div>
+        <div class="kpi-ch ne">$648.000 en esa hora</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Propinas totales</div>
+        <div class="kpi-val sm">$312.000</div>
+        <div class="kpi-ch up">↑ 7.3% vs ayer</div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="g21">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-t">Ventas · Últimos 7 días</div>
+          <div class="legend-row" style="margin:0;gap:10px">
+            <div class="leg-item"><div class="leg-dot" style="background:var(--bold-navy)"></div>Esta semana</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--gray-300)"></div>Semana anterior</div>
+          </div>
+        </div>
+        <div class="ch-wrap" style="height:210px"><canvas id="ch-weekly"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-t">Métodos de pago</div>
+          <span class="chip chip-a">Hoy</span>
+        </div>
+        <div class="ch-wrap" style="height:160px"><canvas id="ch-pay"></canvas></div>
+        <div style="margin-top:14px">
+          <div class="meter-row"><span class="meter-lbl">Nequi / Daviplata</span><div class="meter-bar"><div class="meter-fill" style="width:27%;background:var(--bold-green)"></div></div><span class="meter-val">27% · $1.16M</span></div>
+          <div class="meter-row"><span class="meter-lbl">Efectivo</span><div class="meter-bar"><div class="meter-fill" style="width:28%;background:var(--bold-gold)"></div></div><span class="meter-val">28% · $1.20M</span></div>
+          <div class="meter-row"><span class="meter-lbl">Tarjeta débito</span><div class="meter-bar"><div class="meter-fill" style="width:22%;background:var(--bold-blue)"></div></div><span class="meter-val">22% · $944K</span></div>
+          <div class="meter-row"><span class="meter-lbl">Tarjeta crédito</span><div class="meter-bar"><div class="meter-fill" style="width:18%;background:var(--bold-navy)"></div></div><span class="meter-val">18% · $772K</span></div>
+          <div class="meter-row"><span class="meter-lbl">QR otros</span><div class="meter-bar"><div class="meter-fill" style="width:5%;background:var(--gray-400)"></div></div><span class="meter-val">5% · $215K</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP PRODUCTS TABLE -->
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-t">Top productos hoy</div>
+        <span class="chip chip-a">Actualizado en vivo</span>
+      </div>
+      <table class="tbl">
+        <thead><tr>
+          <th>#</th><th>Producto</th><th>Categoría</th><th class="r">Unidades</th><th class="r">Ingresos</th><th class="r">% del total</th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span class="rank">1</span></td><td class="bold">Pizza Pepperoni</td><td>Pizzas</td><td class="r">14</td><td class="r">$546.000</td><td class="r"><span class="chip chip-a">12.7%</span></td></tr>
+          <tr><td><span class="rank">2</span></td><td class="bold">Papas Fritas</td><td>Acompañamientos</td><td class="r">19</td><td class="r">$171.000</td><td class="r"><span class="chip chip-g">4.0%</span></td></tr>
+          <tr><td><span class="rank">3</span></td><td class="bold">Burger Clásica</td><td>Hamburguesas</td><td class="r">13</td><td class="r">$364.000</td><td class="r"><span class="chip chip-a">8.5%</span></td></tr>
+          <tr><td><span class="rank">4</span></td><td class="bold">Limonada de Coco</td><td>Bebidas</td><td class="r">16</td><td class="r">$144.000</td><td class="r"><span class="chip chip-g">3.4%</span></td></tr>
+          <tr><td><span class="rank">5</span></td><td class="bold">BBQ Bacon Burger</td><td>Hamburguesas</td><td class="r">9</td><td class="r">$342.000</td><td class="r"><span class="chip chip-a">8.0%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ VIEW: MENÚ ============================================================ -->
+<div id="view-menu" class="view">
+  <div class="ph">
+    <div>
+      <div class="ph-title">Ingeniería de Menú</div>
+      <div class="ph-sub">Análisis de rentabilidad × popularidad</div>
+    </div>
+    <div class="ph-right">
+      <div class="ftabs">
+        <button class="ft active">Esta semana</button>
+        <button class="ft">Este mes</button>
+        <button class="ft">Últimos 3 meses</button>
+      </div>
+    </div>
+  </div>
+  <div class="pc">
+
+    <div class="g4" style="margin-bottom:20px">
+      <div class="kpi hi-a">
+        <div class="kpi-lbl">Ítems Estrella ⭐</div>
+        <div class="kpi-val sm">3</div>
+        <div class="kpi-ch ne">Alta rentabilidad + alta demanda</div>
+      </div>
+      <div class="kpi hi-b">
+        <div class="kpi-lbl">Ítems Acertijo ❓</div>
+        <div class="kpi-val sm">4</div>
+        <div class="kpi-ch ne">Alta rentabilidad · baja demanda</div>
+      </div>
+      <div class="kpi hi-g">
+        <div class="kpi-lbl">Vacas Lecheras 🐄</div>
+        <div class="kpi-val sm">3</div>
+        <div class="kpi-ch ne">Baja rentabilidad · alta demanda</div>
+      </div>
+      <div class="kpi hi-r">
+        <div class="kpi-lbl">Ítems Perro 🐶</div>
+        <div class="kpi-val sm">2</div>
+        <div class="kpi-ch ne">Baja rentabilidad · baja demanda</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-hdr">
+        <div class="card-t">Matriz rentabilidad × popularidad</div>
+        <div class="legend-row" style="margin:0;gap:10px">
+          <div class="leg-item"><div class="leg-dot" style="background:#F5A623"></div>Estrella</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#4A90D9"></div>Acertijo</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#27AE60"></div>Vaca</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#E83A5A"></div>Perro</div>
+        </div>
+      </div>
+      <div style="font-size:var(--text-xs);color:var(--gray-400);margin-bottom:8px">Eje X: Unidades vendidas (semana) · Eje Y: Margen de contribución (%)</div>
+      <div class="ch-wrap" style="height:340px"><canvas id="ch-matrix"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-t">Detalle de ítems del menú</div>
+        <div class="card-action">Exportar CSV ↗</div>
+      </div>
+      <table class="tbl">
+        <thead><tr>
+          <th>Producto</th><th>Categoría</th><th class="r">Unidades</th><th class="r">Precio venta</th><th class="r">Costo</th><th class="r">Margen %</th><th class="r">Ingresos</th><th>Clasificación</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="bold">Pizza Pepperoni</td><td>Pizzas</td><td class="r">42</td><td class="r">$39.000</td><td class="r">$11.000</td><td class="r">72%</td><td class="r">$1.638.000</td><td><span class="bd bd-star">⭐ Estrella</span></td></tr>
+          <tr><td class="bold">BBQ Bacon Burger</td><td>Hamburguesas</td><td class="r">35</td><td class="r">$38.000</td><td class="r">$13.000</td><td class="r">66%</td><td class="r">$1.330.000</td><td><span class="bd bd-star">⭐ Estrella</span></td></tr>
+          <tr><td class="bold">Burger Clásica</td><td>Hamburguesas</td><td class="r">48</td><td class="r">$28.000</td><td class="r">$9.500</td><td class="r">66%</td><td class="r">$1.344.000</td><td><span class="bd bd-star">⭐ Estrella</span></td></tr>
+          <tr><td class="bold">Papas Fritas</td><td>Acompañamientos</td><td class="r">65</td><td class="r">$9.000</td><td class="r">$2.500</td><td class="r">72%</td><td class="r">$585.000</td><td><span class="bd bd-cow">🐄 Vaca</span></td></tr>
+          <tr><td class="bold">Limonada de Coco</td><td>Bebidas</td><td class="r">58</td><td class="r">$9.000</td><td class="r">$1.500</td><td class="r">83%</td><td class="r">$522.000</td><td><span class="bd bd-cow">🐄 Vaca</span></td></tr>
+          <tr><td class="bold">Cerveza Águila</td><td>Bebidas</td><td class="r">34</td><td class="r">$8.000</td><td class="r">$2.500</td><td class="r">69%</td><td class="r">$272.000</td><td><span class="bd bd-cow">🐄 Vaca</span></td></tr>
+          <tr><td class="bold">Pizza 4 Quesos</td><td>Pizzas</td><td class="r">18</td><td class="r">$42.000</td><td class="r">$12.000</td><td class="r">71%</td><td class="r">$756.000</td><td><span class="bd bd-q">❓ Acertijo</span></td></tr>
+          <tr><td class="bold">Pizza Margarita</td><td>Pizzas</td><td class="r">14</td><td class="r">$32.000</td><td class="r">$7.500</td><td class="r">77%</td><td class="r">$448.000</td><td><span class="bd bd-q">❓ Acertijo</span></td></tr>
+          <tr><td class="bold">Nachos con Queso</td><td>Acompañamientos</td><td class="r">8</td><td class="r">$14.000</td><td class="r">$4.500</td><td class="r">68%</td><td class="r">$112.000</td><td><span class="bd bd-q">❓ Acertijo</span></td></tr>
+          <tr><td class="bold">Veggie Smash</td><td>Hamburguesas</td><td class="r">12</td><td class="r">$26.000</td><td class="r">$8.000</td><td class="r">69%</td><td class="r">$312.000</td><td><span class="bd bd-q">❓ Acertijo</span></td></tr>
+          <tr><td class="bold">Alitas BBQ</td><td>Acompañamientos</td><td class="r">15</td><td class="r">$28.000</td><td class="r">$14.000</td><td class="r">50%</td><td class="r">$420.000</td><td><span class="bd bd-dog">🐶 Perro</span></td></tr>
+          <tr><td class="bold">Ensalada César</td><td>Ensaladas</td><td class="r">6</td><td class="r">$18.000</td><td class="r">$5.000</td><td class="r">72%</td><td class="r">$108.000</td><td><span class="bd bd-dog">🐶 Perro</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ VIEW: OPERACIONES ============================================================ -->
+<div id="view-ops" class="view">
+  <div class="ph">
+    <div>
+      <div class="ph-title">Rendimiento Operacional</div>
+      <div class="ph-sub">Mesas · Tiempos · Turnos</div>
+    </div>
+    <div class="ph-right">
+      <div class="ftabs">
+        <button class="ft active">Esta semana</button>
+        <button class="ft">Este mes</button>
+      </div>
+    </div>
+  </div>
+  <div class="pc">
+
+    <div class="slbl">Métricas clave</div>
+    <div class="g4" style="margin-bottom:20px">
+      <div class="kpi hi-g">
+        <div class="kpi-lbl">Tiempo promedio ocupación</div>
+        <div class="kpi-val">48 min</div>
+        <div class="kpi-ch ne">Meta: ≤ 50 min</div>
+        <div class="pbar"><div class="pfill" style="width:82%;background:var(--bold-green)"></div></div>
+      </div>
+      <div class="kpi hi-a">
+        <div class="kpi-lbl">Rotación promedio mesas</div>
+        <div class="kpi-val">3.2×</div>
+        <div class="kpi-ch up">↑ 0.3× vs semana anterior</div>
+      </div>
+      <div class="kpi hi-b">
+        <div class="kpi-lbl">Tiempo a primera comanda</div>
+        <div class="kpi-val">7 min</div>
+        <div class="kpi-ch ne">Meta: ≤ 8 min · <span style="color:var(--bold-green);font-weight:600">✓ OK</span></div>
+      </div>
+      <div class="kpi hi-r">
+        <div class="kpi-lbl">Órdenes modificadas</div>
+        <div class="kpi-val">4.2%</div>
+        <div class="kpi-ch dn">↑ 1.1% vs semana anterior</div>
+      </div>
+    </div>
+
+    <!-- HEATMAP -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-hdr">
+        <div class="card-t">Mapa de calor de ventas — Hora × Día de la semana</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:var(--text-xs);color:var(--gray-400)">
+          <div style="width:60px;height:8px;background:linear-gradient(to right,var(--gray-200),var(--bold-navy));border-radius:4px"></div>
+          Baja → Alta
+        </div>
+      </div>
+      <div class="hm-wrap">
+        <div class="hm" id="heatmap"></div>
+      </div>
+    </div>
+
+    <!-- WAITER PERFORMANCE + TABLE PERFORMANCE -->
+    <div class="g2">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-t">Ventas por mesero · Esta semana</div>
+        </div>
+        <div class="ch-wrap" style="height:220px"><canvas id="ch-waiter"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-t">Desempeño de mesas</div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Mesa</th><th>Zona</th><th class="r">Rotaciones</th><th class="r">T. prom. ocup.</th><th class="r">Ventas sem.</th></tr></thead>
+          <tbody>
+            <tr><td class="bold">Mesa 5</td><td>Salón 1</td><td class="r"><span class="chip chip-g">4.8×</span></td><td class="r">38 min</td><td class="r">$892.000</td></tr>
+            <tr><td class="bold">Mesa 3</td><td>Salón 1</td><td class="r"><span class="chip chip-g">4.2×</span></td><td class="r">42 min</td><td class="r">$754.000</td></tr>
+            <tr><td class="bold">Mesa 8</td><td>Terraza</td><td class="r"><span class="chip chip-a">3.8×</span></td><td class="r">45 min</td><td class="r">$687.000</td></tr>
+            <tr><td class="bold">Mesa 11</td><td>Terraza</td><td class="r"><span class="chip chip-a">3.5×</span></td><td class="r">51 min</td><td class="r">$612.000</td></tr>
+            <tr><td class="bold">Mesa 2</td><td>Salón 1</td><td class="r"><span class="chip chip-a">3.1×</span></td><td class="r">55 min</td><td class="r">$534.000</td></tr>
+            <tr><td class="bold">VIP Mesa 1</td><td>VIP</td><td class="r"><span class="chip chip-r">1.5×</span></td><td class="r">94 min</td><td class="r">$2.140.000</td></tr>
+            <tr><td class="bold">VIP Mesa 2</td><td>VIP</td><td class="r"><span class="chip chip-r">1.8×</span></td><td class="r">82 min</td><td class="r">$1.890.000</td></tr>
+          </tbody>
+        </table>
+        <div style="padding:10px 10px 0;font-size:var(--text-sm);color:var(--gray-400)">Nota: mesas VIP tienen tickets más altos, su baja rotación es esperada.</div>
+      </div>
+    </div>
+
+    <!-- WAITER DETAIL TABLE -->
+    <div class="card">
+      <div class="card-hdr"><div class="card-t">Detalle por mesero · Esta semana</div></div>
+      <table class="tbl">
+        <thead><tr><th>Mesero</th><th class="r">Órdenes</th><th class="r">Ventas totales</th><th class="r">Ticket promedio</th><th class="r">Propinas</th><th class="r">Mods. / errores</th></tr></thead>
+        <tbody>
+          <tr><td class="bold">Carlos M.</td><td class="r">64</td><td class="r">$2.847.000</td><td class="r">$44.500</td><td class="r">$124.000</td><td class="r"><span class="chip chip-g">2.1%</span></td></tr>
+          <tr><td class="bold">Ana R.</td><td class="r">57</td><td class="r">$2.341.000</td><td class="r">$41.200</td><td class="r">$98.000</td><td class="r"><span class="chip chip-g">3.5%</span></td></tr>
+          <tr><td class="bold">Mónica L.</td><td class="r">51</td><td class="r">$2.156.000</td><td class="r">$42.100</td><td class="r">$89.000</td><td class="r"><span class="chip chip-a">4.8%</span></td></tr>
+          <tr><td class="bold">David P.</td><td class="r">48</td><td class="r">$1.893.000</td><td class="r">$39.800</td><td class="r">$76.000</td><td class="r"><span class="chip chip-r">7.1%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ VIEW: FINANCIERO ============================================================ -->
+<div id="view-fin" class="view">
+  <div class="ph">
+    <div>
+      <div class="ph-title">Resumen Financiero</div>
+      <div class="ph-sub">Semana · 19 – 25 de marzo, 2026</div>
+    </div>
+    <div class="ph-right">
+      <div class="ftabs">
+        <button class="ft">Hoy</button>
+        <button class="ft active">Esta semana</button>
+        <button class="ft">Este mes</button>
+      </div>
+      <button class="pill-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportar
+      </button>
+    </div>
+  </div>
+  <div class="pc">
+
+    <div class="slbl">Resumen semanal · comparativo vs semana anterior</div>
+    <div class="g4" style="margin-bottom:20px">
+      <div class="kpi hi-a">
+        <div class="kpi-lbl">Ventas brutas</div>
+        <div class="kpi-val">$26.847.500</div>
+        <div class="kpi-ch up">↑ 12.4% vs semana anterior</div>
+      </div>
+      <div class="kpi hi-g">
+        <div class="kpi-lbl">Impoconsumo generado (8%)</div>
+        <div class="kpi-val">$2.147.800</div>
+        <div class="kpi-ch ne">Obligatorio en dine-in</div>
+      </div>
+      <div class="kpi hi-b">
+        <div class="kpi-lbl">Propinas totales</div>
+        <div class="kpi-val">$1.842.000</div>
+        <div class="kpi-ch up">↑ 8.7% vs semana anterior</div>
+      </div>
+      <div class="kpi hi-r">
+        <div class="kpi-lbl">Promedio diario</div>
+        <div class="kpi-val">$3.835.357</div>
+        <div class="kpi-ch up">↑ 12.4% vs semana anterior</div>
+      </div>
+    </div>
+
+    <!-- TREND CHART -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-hdr">
+        <div class="card-t">Ventas diarias — Últimas 2 semanas</div>
+        <div class="legend-row" style="margin:0;gap:10px">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--bold-navy)"></div>Sem. actual (19–25 mar)</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--gray-300)"></div>Sem. anterior (12–18 mar)</div>
+        </div>
+      </div>
+      <div class="ch-wrap" style="height:230px"><canvas id="ch-trend"></canvas></div>
+    </div>
+
+    <!-- CHANNEL + PAYMENT -->
+    <div class="g2">
+      <div class="card">
+        <div class="card-hdr"><div class="card-t">Ventas por canal</div></div>
+        <div class="ch-wrap" style="height:200px"><canvas id="ch-channel"></canvas></div>
+        <div style="margin-top:16px">
+          <div class="meter-row"><span class="meter-lbl">Mesa (dine-in)</span><div class="meter-bar"><div class="meter-fill" style="width:67%;background:var(--bold-navy)"></div></div><span class="meter-val">67% · $17.98M</span></div>
+          <div class="meter-row"><span class="meter-lbl">Mostrador (counter)</span><div class="meter-bar"><div class="meter-fill" style="width:33%;background:var(--bold-blue)"></div></div><span class="meter-val">33% · $8.86M</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-t">Desglose métodos de pago</div></div>
+        <table class="tbl">
+          <thead><tr><th>Método</th><th class="r">Transacciones</th><th class="r">Monto</th><th class="r">% del total</th></tr></thead>
+          <tbody>
+            <tr><td class="bold">Efectivo</td><td class="r">214</td><td class="r">$7.515.000</td><td class="r"><span class="chip chip-a">28%</span></td></tr>
+            <tr><td class="bold">Nequi / Daviplata</td><td class="r">204</td><td class="r">$7.249.000</td><td class="r"><span class="chip chip-g">27%</span></td></tr>
+            <tr><td class="bold">Tarjeta débito</td><td class="r">168</td><td class="r">$5.906.000</td><td class="r"><span class="chip chip-a">22%</span></td></tr>
+            <tr><td class="bold">Tarjeta crédito</td><td class="r">138</td><td class="r">$4.832.000</td><td class="r"><span class="chip chip-a">18%</span></td></tr>
+            <tr><td class="bold">QR otros</td><td class="r">38</td><td class="r">$1.344.000</td><td class="r"><span class="chip">5%</span></td></tr>
+            <tr style="border-top:2px solid var(--bold-navy)"><td class="bold" style="font-weight:700;color:var(--bold-navy)">Total</td><td class="r bold">762</td><td class="r bold">$26.847.500</td><td class="r">100%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAX SUMMARY -->
+    <div class="card">
+      <div class="card-hdr"><div class="card-t">Resumen fiscal · Semana 19–25 mar</div><span class="chip chip-a">Solo referencial — no reemplaza contador</span></div>
+      <div class="g3" style="margin-bottom:0">
+        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:14px 16px;border:var(--border-default)">
+          <div class="kpi-lbl">Impoconsumo (8%)</div>
+          <div class="kpi-val sm">$2.147.800</div>
+          <div class="kpi-ch ne">Aplica a ventas dine-in</div>
+        </div>
+        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:14px 16px;border:var(--border-default)">
+          <div class="kpi-lbl">IVA en otros productos</div>
+          <div class="kpi-val sm">$892.000</div>
+          <div class="kpi-ch ne">Bebidas alcohólicas y otros</div>
+        </div>
+        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:14px 16px;border:var(--border-default)">
+          <div class="kpi-lbl">Propinas (no gravadas)</div>
+          <div class="kpi-val sm">$1.842.000</div>
+          <div class="kpi-ch up">No base gravable · Art. 512-9</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ============================================================ VIEW: VENTAS ============================================================ -->
+<div id="view-ventas" class="view">
+  <div class="ph">
+    <div>
+      <div class="ph-title">Reporte de Ventas</div>
+      <div class="ph-sub">Detalle transaccional de órdenes</div>
+    </div>
+    <div class="ph-right">
+      <div class="ftabs">
+        <button class="ft">Hoy</button>
+        <button class="ft active">Esta semana</button>
+        <button class="ft">Este mes</button>
+        <button class="ft">Personalizado</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="action-bar">
+    <div class="action-bar-left">
+      <span class="filt-lbl">Desde</span>
+      <input type="datetime-local" class="filt-input" value="2026-03-19T00:00">
+      <span class="filt-lbl">Hasta</span>
+      <input type="datetime-local" class="filt-input" value="2026-03-25T23:59">
+      <select class="filt-select">
+        <option>Todos los meseros</option>
+        <option>Carlos M.</option>
+        <option>Ana R.</option>
+        <option>Mónica L.</option>
+        <option>David P.</option>
+      </select>
+      <select class="filt-select">
+        <option>Todos los estados</option>
+        <option>Pagada</option>
+        <option>Pendiente</option>
+        <option>Anulada</option>
+        <option>Abierta</option>
+      </select>
+      <select class="filt-select">
+        <option>Todos los canales</option>
+        <option>Mesa</option>
+        <option>Mostrador</option>
+      </select>
+    </div>
+    <div class="action-bar-right">
+      <button class="ab-btn excel" onclick="void(0)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Exportar Excel
+      </button>
+      <button class="ab-btn print" onclick="void(0)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir
+      </button>
+    </div>
+  </div>
+
+  <div class="pc">
+    <!-- SUMMARY KPIs -->
+    <div class="slbl">Resumen del período</div>
+    <div class="g4" style="margin-bottom:20px">
+      <div class="kpi hi-a">
+        <div class="kpi-lbl">Total ventas brutas</div>
+        <div class="kpi-val">$26.847.500</div>
+        <div class="kpi-ch ne">98 transacciones</div>
+      </div>
+      <div class="kpi hi-g">
+        <div class="kpi-lbl">Ticket promedio</div>
+        <div class="kpi-val">$43.800</div>
+        <div class="kpi-ch up">↑ 5.2% vs semana anterior</div>
+      </div>
+      <div class="kpi hi-b">
+        <div class="kpi-lbl">Ventas pagadas</div>
+        <div class="kpi-val">88</div>
+        <div class="kpi-ch ne"><span class="st st-paid">Pagada</span> 89.8%</div>
+      </div>
+      <div class="kpi hi-r">
+        <div class="kpi-lbl">Pendientes / Abiertas</div>
+        <div class="kpi-val">10</div>
+        <div class="kpi-ch ne">7 abiertas · 3 pendientes</div>
+      </div>
+    </div>
+
+    <!-- MAIN TABLE -->
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-t">Detalle de ventas · 19–25 mar 2026 · mostrando 1–15 de 98</div>
+        <div style="font-size:var(--text-sm);color:var(--gray-400)">Orden descendente por fecha</div>
+      </div>
+      <div class="tbl-scroll">
+        <table class="tbl" style="min-width:1100px">
+          <thead><tr>
+            <th>ID Venta</th><th>Inicio</th><th>Fin</th><th>Mesero</th><th>Mesa / Canal</th><th>Cliente</th>
+            <th class="r">Desc.</th><th class="r">Subtotal</th><th class="r">Impoconsumo</th><th class="r">IVA</th><th class="r">Propina</th><th class="r">Total</th><th>Estado factura</th><th>Estado venta</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2614</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 12:14</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 13:02</td>
+              <td>Carlos M.</td><td>Mesa 5</td><td>Consumidor final</td>
+              <td class="r">—</td><td class="r">$72.000</td><td class="r">$5.760</td><td class="r">—</td><td class="r">$9.000</td><td class="r bold">$86.760</td>
+              <td><span class="st st-paid">Facturada</span></td><td><span class="st st-closed">Cerrada</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2613</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 11:50</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 12:44</td>
+              <td>Ana R.</td><td>Mesa 3</td><td>Consumidor final</td>
+              <td class="r">$5.000</td><td class="r">$55.000</td><td class="r">$4.400</td><td class="r">—</td><td class="r">$6.000</td><td class="r bold">$60.400</td>
+              <td><span class="st st-paid">Facturada</span></td><td><span class="st st-closed">Cerrada</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2612</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 11:30</td>
+              <td class="r" style="font-size:var(--text-xs)">—</td>
+              <td>Carlos M.</td><td>Mesa 8</td><td>Consumidor final</td>
+              <td class="r">—</td><td class="r">$38.000</td><td class="r">$3.040</td><td class="r">—</td><td class="r">—</td><td class="r bold">$41.040</td>
+              <td><span class="st st-pend">Pendiente</span></td><td><span class="st st-open">Abierta</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2611</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 11:18</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 11:52</td>
+              <td>Mostrador</td><td><span class="chip chip-a" style="font-size:10px">Mostrador</span></td><td>Consumidor final</td>
+              <td class="r">—</td><td class="r">$28.000</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r bold">$28.000</td>
+              <td><span class="st st-paid">Facturada</span></td><td><span class="st st-closed">Cerrada</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2610</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 10:55</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 11:45</td>
+              <td>Mónica L.</td><td>Mesa 11</td><td>Juan Pérez</td>
+              <td class="r">$10.000</td><td class="r">$110.000</td><td class="r">$8.800</td><td class="r">$3.200</td><td class="r">$15.000</td><td class="r bold">$127.000</td>
+              <td><span class="st st-paid">Facturada</span></td><td><span class="st st-closed">Cerrada</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2609</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 10:20</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 11:10</td>
+              <td>David P.</td><td>VIP Mesa 1</td><td>Empresa XYZ</td>
+              <td class="r">$20.000</td><td class="r">$245.000</td><td class="r">$19.600</td><td class="r">$12.500</td><td class="r">$35.000</td><td class="r bold">$292.100</td>
+              <td><span class="st st-paid">Facturada</span></td><td><span class="st st-closed">Cerrada</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2608</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 09:48</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 10:14</td>
+              <td>Mostrador</td><td><span class="chip chip-a" style="font-size:10px">Mostrador</span></td><td>Consumidor final</td>
+              <td class="r">—</td><td class="r">$18.000</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r bold">$18.000</td>
+              <td><span class="st st-void">Anulada</span></td><td><span class="st st-void">Anulada</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2607</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 09:30</td>
+              <td class="r" style="font-size:var(--text-xs)">25/03 10:22</td>
+              <td>Ana R.</td><td>Mesa 2</td><td>Consumidor final</td>
+              <td class="r">—</td><td class="r">$67.000</td><td class="r">$5.360</td><td class="r">—</td><td class="r">$8.000</td><td class="r bold">$80.360</td>
+              <td><span class="st st-paid">Facturada</span></td><td><span class="st st-closed">Cerrada</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2606</td>
+              <td class="r" style="font-size:var(--text-xs)">24/03 20:15</td>
+              <td class="r" style="font-size:var(--text-xs)">24/03 21:18</td>
+              <td>Carlos M.</td><td>Mesa 7</td><td>Consumidor final</td>
+              <td class="r">—</td><td class="r">$84.000</td><td class="r">$6.720</td><td class="r">$4.800</td><td class="r">$10.000</td><td class="r bold">$105.520</td>
+              <td><span class="st st-paid">Facturada</span></td><td><span class="st st-closed">Cerrada</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2605</td>
+              <td class="r" style="font-size:var(--text-xs)">24/03 19:40</td>
+              <td class="r" style="font-size:var(--text-xs)">24/03 20:45</td>
+              <td>Mónica L.</td><td>Mesa 4</td><td>María López</td>
+              <td class="r">$8.000</td><td class="r">$92.000</td><td class="r">$7.360</td><td class="r">—</td><td class="r">$12.000</td><td class="r bold">$103.360</td>
+              <td><span class="st st-partial">Parcial</span></td><td><span class="st st-closed">Cerrada</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2604</td>
+              <td class="r" style="font-size:var(--text-xs)">24/03 19:10</td>
+              <td class="r" style="font-size:var(--text-xs)">24/03 20:02</td>
+              <td>David P.</td><td>Mesa 9</td><td>Consumidor final</td>
+              <td class="r">—</td><td class="r">$48.000</td><td class="r">$3.840</td><td class="r">—</td><td class="r">$5.000</td><td class="r bold">$56.840</td>
+              <td><span class="st st-pend">Pendiente</span></td><td><span class="st st-closed">Cerrada</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2603</td>
+              <td class="r" style="font-size:var(--text-xs)">24/03 13:05</td>
+              <td class="r" style="font-size:var(--text-xs)">24/03 14:12</td>
+              <td>Ana R.</td><td>VIP Mesa 2</td><td>Corp. Andina</td>
+              <td class="r">$30.000</td><td class="r">$310.000</td><td class="r">$24.800</td><td class="r">$18.000</td><td class="r">$40.000</td><td class="r bold">$362.800</td>
+              <td><span class="st st-paid">Facturada</span></td><td><span class="st st-closed">Cerrada</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2602</td>
+              <td class="r" style="font-size:var(--text-xs)">24/03 12:22</td>
+              <td class="r" style="font-size:var(--text-xs)">24/03 13:15</td>
+              <td>Carlos M.</td><td>Mesa 6</td><td>Consumidor final</td>
+              <td class="r">—</td><td class="r">$57.000</td><td class="r">$4.560</td><td class="r">—</td><td class="r">$7.000</td><td class="r bold">$68.560</td>
+              <td><span class="st st-paid">Facturada</span></td><td><span class="st st-closed">Cerrada</span></td>
+            </tr>
+            <tr>
+              <td class="bold" style="font-size:var(--text-xs);color:var(--bold-navy)">#VTA-2601</td>
+              <td class="r" style="font-size:var(--text-xs)">24/03 11:45</td>
+              <td class="r" style="font-size:var(--text-xs)">24/03 12:18</td>
+              <td>Mostrador</td><td><span class="chip chip-a" style="font-size:10px">Mostrador</span></td><td>Consumidor final</td>
+              <td class="r">—</td><td class="r">$28.000</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r bold">$28.000</td>
+              <td><span class="st st-paid">Facturada</span></td><td><span class="st st-closed">Cerrada</span></td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="6" style="color:var(--bold-navy);font-weight:700">Totales del período (98 transacciones)</td>
+              <td class="r" style="font-size:var(--text-sm)">$148.000</td>
+              <td class="r" style="font-size:var(--text-sm)">$24.210.000</td>
+              <td class="r" style="font-size:var(--text-sm)">$2.147.800</td>
+              <td class="r" style="font-size:var(--text-sm)">$892.000</td>
+              <td class="r" style="font-size:var(--text-sm)">$1.842.000</td>
+              <td class="r" style="font-size:var(--text-sm);color:var(--bold-navy);font-weight:700">$26.847.500</td>
+              <td colspan="2"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div class="pg-info">Mostrando 1–15 de 98 transacciones</div>
+        <div class="pg-btns">
+          <button class="pg-btn">‹</button>
+          <button class="pg-btn cur">1</button>
+          <button class="pg-btn">2</button>
+          <button class="pg-btn">3</button>
+          <button class="pg-btn">···</button>
+          <button class="pg-btn">7</button>
+          <button class="pg-btn">›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ VIEW: OCUPACIÓN ============================================================ -->
+<div id="view-ocupacion" class="view">
+  <div class="ph">
+    <div>
+      <div class="ph-title">Ocupación y Tiempos</div>
+      <div class="ph-sub">Duración promedio de mesas y horas pico reales</div>
+    </div>
+    <div class="ph-right">
+      <div class="ftabs">
+        <button class="ft">Hoy</button>
+        <button class="ft active">Esta semana</button>
+        <button class="ft">Este mes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTION BAR -->
+  <div class="action-bar">
+    <div class="action-bar-left">
+      <span class="filt-lbl">Zona</span>
+      <select class="filt-select">
+        <option>Todas las zonas</option>
+        <option>Salón 1</option>
+        <option>Terraza</option>
+        <option>VIP</option>
+      </select>
+      <span class="filt-lbl">Mesa</span>
+      <select class="filt-select">
+        <option>Todas las mesas</option>
+        <option>Mesa 1</option><option>Mesa 2</option><option>Mesa 3</option>
+        <option>Mesa 4</option><option>Mesa 5</option>
+      </select>
+    </div>
+    <div class="action-bar-right">
+      <button class="ab-btn excel" onclick="void(0)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Exportar Excel
+      </button>
+      <button class="ab-btn print" onclick="void(0)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir
+      </button>
+    </div>
+  </div>
+
+  <div class="pc">
+
+    <!-- KPIs -->
+    <div class="slbl">Resumen de ocupación · 19–25 mar</div>
+    <div class="g4" style="margin-bottom:20px">
+      <div class="kpi hi-a">
+        <div class="kpi-lbl">Tiempo prom. ocupación</div>
+        <div class="kpi-val">48 min</div>
+        <div class="kpi-ch ne">Meta interna: ≤ 50 min</div>
+        <div class="pbar"><div class="pfill" style="width:82%;background:var(--bold-green)"></div></div>
+      </div>
+      <div class="kpi hi-r">
+        <div class="kpi-lbl">Hora pico real</div>
+        <div class="kpi-val">1:00 PM</div>
+        <div class="kpi-ch ne"><span class="peak-badge">95% ocupación</span></div>
+      </div>
+      <div class="kpi hi-g">
+        <div class="kpi-lbl">Sesiones de mesa</div>
+        <div class="kpi-val">218</div>
+        <div class="kpi-ch up">↑ 14 vs semana anterior</div>
+      </div>
+      <div class="kpi hi-b">
+        <div class="kpi-lbl">Mesa más productiva</div>
+        <div class="kpi-val sm" style="font-family:var(--font);font-size:16px">Mesa 5</div>
+        <div class="kpi-ch ne">4.8 rotaciones · prom. 38 min</div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="g2">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-t">Tiempo promedio de ocupación por mesa (min)</div>
+          <span class="chip chip-g">Semana</span>
+        </div>
+        <div class="ch-wrap" style="height:240px"><canvas id="ch-ocu-mesas"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-t">Ocupación promedio por hora del día (%)</div>
+          <span class="chip chip-a">Promedio sem.</span>
+        </div>
+        <div class="ch-wrap" style="height:240px"><canvas id="ch-ocu-horas"></canvas></div>
+      </div>
+    </div>
+
+    <!-- HEATMAP (días × horas) -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-hdr">
+        <div class="card-t">Mapa de calor · Ocupación % por día y hora</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:var(--text-xs);color:var(--gray-400)">0%</div>
+          <div style="width:80px;height:7px;background:linear-gradient(to right,var(--gray-200),var(--bold-navy));border-radius:4px"></div>
+          <div style="font-size:var(--text-xs);color:var(--gray-400)">100%</div>
+        </div>
+      </div>
+      <div class="hm-wrap">
+        <div class="hm" id="ocu-heatmap"></div>
+      </div>
+    </div>
+
+    <!-- SESSION DETAIL TABLE -->
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-t">Sesiones por mesa · hoy (25 mar)</div>
+        <div class="card-action">Ver semana completa →</div>
+      </div>
+      <div class="tbl-scroll">
+        <table class="tbl" style="min-width:780px">
+          <thead><tr>
+            <th>Mesa</th><th>Zona</th><th>Mesero</th>
+            <th class="r">Inicio</th><th class="r">Fin</th>
+            <th class="r">Duración</th><th class="r">Comensales</th><th class="r">Total venta</th><th>Estado</th>
+          </tr></thead>
+          <tbody>
+            <tr><td class="bold">Mesa 5</td><td>Salón 1</td><td>Carlos M.</td><td class="r" style="font-size:var(--text-xs)">12:14</td><td class="r" style="font-size:var(--text-xs)">13:02</td><td class="r"><span class="chip chip-g">48 min</span></td><td class="r">2</td><td class="r">$86.760</td><td><span class="st st-closed">Cerrada</span></td></tr>
+            <tr><td class="bold">Mesa 3</td><td>Salón 1</td><td>Ana R.</td><td class="r" style="font-size:var(--text-xs)">11:50</td><td class="r" style="font-size:var(--text-xs)">12:44</td><td class="r"><span class="chip chip-g">54 min</span></td><td class="r">3</td><td class="r">$60.400</td><td><span class="st st-closed">Cerrada</span></td></tr>
+            <tr><td class="bold">Mesa 8</td><td>Terraza</td><td>Carlos M.</td><td class="r" style="font-size:var(--text-xs)">11:30</td><td class="r" style="font-size:var(--text-xs)">—</td><td class="r"><span class="chip chip-a" style="font-size:10px">En curso</span></td><td class="r">4</td><td class="r">$41.040</td><td><span class="st st-open">Abierta</span></td></tr>
+            <tr><td class="bold">Mesa 11</td><td>Terraza</td><td>Mónica L.</td><td class="r" style="font-size:var(--text-xs)">10:55</td><td class="r" style="font-size:var(--text-xs)">11:52</td><td class="r"><span class="chip chip-a">57 min</span></td><td class="r">5</td><td class="r">$127.000</td><td><span class="st st-closed">Cerrada</span></td></tr>
+            <tr><td class="bold">VIP Mesa 1</td><td>VIP</td><td>David P.</td><td class="r" style="font-size:var(--text-xs)">10:20</td><td class="r" style="font-size:var(--text-xs)">11:10</td><td class="r"><span class="chip chip-r">90 min</span></td><td class="r">8</td><td class="r">$292.100</td><td><span class="st st-closed">Cerrada</span></td></tr>
+            <tr><td class="bold">Mesa 2</td><td>Salón 1</td><td>Ana R.</td><td class="r" style="font-size:var(--text-xs)">09:30</td><td class="r" style="font-size:var(--text-xs)">10:22</td><td class="r"><span class="chip chip-a">52 min</span></td><td class="r">2</td><td class="r">$80.360</td><td><span class="st st-closed">Cerrada</span></td></tr>
+            <tr><td class="bold">Mesa 4</td><td>Salón 1</td><td>Mónica L.</td><td class="r" style="font-size:var(--text-xs)">08:45</td><td class="r" style="font-size:var(--text-xs)">09:28</td><td class="r"><span class="chip chip-g">43 min</span></td><td class="r">2</td><td class="r">$54.000</td><td><span class="st st-closed">Cerrada</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div class="pg-info">Mostrando 1–7 de 22 sesiones del día</div>
+        <div class="pg-btns">
+          <button class="pg-btn">‹</button>
+          <button class="pg-btn cur">1</button>
+          <button class="pg-btn">2</button>
+          <button class="pg-btn">3</button>
+          <button class="pg-btn">›</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ VIEW: PROPINAS ============================================================ -->
+<div id="view-propinas" class="view">
+  <div class="ph">
+    <div>
+      <div class="ph-title">Propinas y Recaudo</div>
+      <div class="ph-sub">Distribución y split al cierre de jornada</div>
+    </div>
+    <div class="ph-right">
+      <div class="ftabs">
+        <button class="ft active">Hoy</button>
+        <button class="ft">Esta semana</button>
+        <button class="ft">Este mes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTION BAR -->
+  <div class="action-bar">
+    <div class="action-bar-left">
+      <input type="date" class="filt-input" value="2026-03-25">
+      <select class="filt-select">
+        <option>Todos los meseros</option>
+        <option>Carlos M.</option>
+        <option>Ana R.</option>
+        <option>Mónica L.</option>
+        <option>David P.</option>
+      </select>
+      <select class="filt-select">
+        <option>Todos los canales</option>
+        <option>Mesa</option>
+        <option>Mostrador</option>
+      </select>
+    </div>
+    <div class="action-bar-right">
+      <button class="ab-btn excel" onclick="void(0)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Exportar Excel
+      </button>
+      <button class="ab-btn print" onclick="void(0)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir
+      </button>
+    </div>
+  </div>
+
+  <div class="pc">
+
+    <!-- KPIs -->
+    <div class="slbl">Propinas del día · 25 mar 2026</div>
+    <div class="g4" style="margin-bottom:20px">
+      <div class="kpi hi-a">
+        <div class="kpi-lbl">Total propinas del día</div>
+        <div class="kpi-val">$312.000</div>
+        <div class="kpi-ch up">↑ 7.3% vs ayer</div>
+      </div>
+      <div class="kpi hi-g">
+        <div class="kpi-lbl">Transacciones con propina</div>
+        <div class="kpi-val">19 / 22</div>
+        <div class="kpi-ch ne">86% de las órdenes</div>
+      </div>
+      <div class="kpi hi-b">
+        <div class="kpi-lbl">Propina promedio</div>
+        <div class="kpi-val">$16.421</div>
+        <div class="kpi-ch ne">por orden con propina</div>
+      </div>
+      <div class="kpi hi-r">
+        <div class="kpi-lbl">Mayor propina individual</div>
+        <div class="kpi-val">$40.000</div>
+        <div class="kpi-ch ne">VIP Mesa 1 · David P.</div>
+      </div>
+    </div>
+
+    <!-- SPLIT + CHART ROW -->
+    <div class="g21">
+      <!-- SPLIT PANEL -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-t">Propinas por mesero · Hoy</div>
+          <span class="chip chip-a">Para liquidación al cierre</span>
+        </div>
+        <div class="ch-wrap" style="height:200px"><canvas id="ch-tips-mesero"></canvas></div>
+        <div style="margin-top:18px">
+          <div class="split-row">
+            <span class="split-name">Carlos M.</span>
+            <div class="split-bar"><div class="split-fill" style="width:37%"></div></div>
+            <span class="split-amt">$115.000</span>
+            <span class="split-pct">37%</span>
+          </div>
+          <div class="split-row">
+            <span class="split-name">Ana R.</span>
+            <div class="split-bar"><div class="split-fill" style="width:28%"></div></div>
+            <span class="split-amt">$87.000</span>
+            <span class="split-pct">28%</span>
+          </div>
+          <div class="split-row">
+            <span class="split-name">Mónica L.</span>
+            <div class="split-bar"><div class="split-fill" style="width:22%"></div></div>
+            <span class="split-amt">$68.000</span>
+            <span class="split-pct">22%</span>
+          </div>
+          <div class="split-row">
+            <span class="split-name">David P.</span>
+            <div class="split-bar"><div class="split-fill" style="width:13%"></div></div>
+            <span class="split-amt">$42.000</span>
+            <span class="split-pct">13%</span>
+          </div>
+        </div>
+        <div class="total-box" style="margin-top:16px">
+          <span class="lbl">Total a repartir hoy</span>
+          <span class="val">$312.000</span>
+        </div>
+      </div>
+
+      <!-- DAILY TREND -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-t">Propinas por día · Última semana</div>
+        </div>
+        <div class="ch-wrap" style="height:200px"><canvas id="ch-tips-dia"></canvas></div>
+        <div style="margin-top:14px">
+          <div class="meter-row"><span class="meter-lbl">Sábado 19</span><div class="meter-bar"><div class="meter-fill" style="width:82%;background:var(--bold-navy)"></div></div><span class="meter-val">$248.000</span></div>
+          <div class="meter-row"><span class="meter-lbl">Domingo 20</span><div class="meter-bar"><div class="meter-fill" style="width:100%;background:var(--bold-navy)"></div></div><span class="meter-val">$298.000</span></div>
+          <div class="meter-row"><span class="meter-lbl">Lunes 21</span><div class="meter-bar"><div class="meter-fill" style="width:42%;background:var(--bold-navy)"></div></div><span class="meter-val">$124.000</span></div>
+          <div class="meter-row"><span class="meter-lbl">Martes 22</span><div class="meter-bar"><div class="meter-fill" style="width:38%;background:var(--bold-navy)"></div></div><span class="meter-val">$114.000</span></div>
+          <div class="meter-row"><span class="meter-lbl">Miércoles 23</span><div class="meter-bar"><div class="meter-fill" style="width:59%;background:var(--bold-navy)"></div></div><span class="meter-val">$176.000</span></div>
+          <div class="meter-row"><span class="meter-lbl">Jueves 24</span><div class="meter-bar"><div class="meter-fill" style="width:68%;background:var(--bold-navy)"></div></div><span class="meter-val">$204.000</span></div>
+          <div class="meter-row"><span class="meter-lbl" style="color:var(--bold-navy);font-weight:600">Hoy · Viernes 25</span><div class="meter-bar"><div class="meter-fill" style="width:89%;background:var(--bold-green)"></div></div><span class="meter-val" style="color:var(--bold-green);font-weight:700">$312.000</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSACTIONAL DETAIL TABLE -->
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-t">Detalle transaccional de propinas · hoy</div>
+        <div class="card-action">Ver historial completo →</div>
+      </div>
+      <div class="tbl-scroll">
+        <table class="tbl" style="min-width:740px">
+          <thead><tr>
+            <th>Hora</th><th>ID Venta</th><th>Mesa / Canal</th><th>Mesero</th>
+            <th class="r">Total venta</th><th class="r">Propina</th><th class="r">% propina</th><th>Método de pago</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="font-size:var(--text-xs)">13:02</td><td style="font-size:var(--text-xs);color:var(--bold-navy);font-weight:600">#VTA-2614</td><td>Mesa 5</td><td>Carlos M.</td><td class="r">$77.760</td><td class="r bold">$9.000</td><td class="r"><span class="chip chip-g">11.6%</span></td><td>Nequi</td></tr>
+            <tr><td style="font-size:var(--text-xs)">12:44</td><td style="font-size:var(--text-xs);color:var(--bold-navy);font-weight:600">#VTA-2613</td><td>Mesa 3</td><td>Ana R.</td><td class="r">$54.400</td><td class="r bold">$6.000</td><td class="r"><span class="chip chip-g">11.0%</span></td><td>Efectivo</td></tr>
+            <tr><td style="font-size:var(--text-xs)">11:45</td><td style="font-size:var(--text-xs);color:var(--bold-navy);font-weight:600">#VTA-2610</td><td>Mesa 11</td><td>Mónica L.</td><td class="r">$112.000</td><td class="r bold">$15.000</td><td class="r"><span class="chip chip-a">13.4%</span></td><td>Tarjeta</td></tr>
+            <tr><td style="font-size:var(--text-xs)">11:10</td><td style="font-size:var(--text-xs);color:var(--bold-navy);font-weight:600">#VTA-2609</td><td>VIP Mesa 1</td><td>David P.</td><td class="r">$257.100</td><td class="r bold">$40.000</td><td class="r"><span class="chip chip-a">15.6%</span></td><td>Tarjeta</td></tr>
+            <tr><td style="font-size:var(--text-xs)">10:22</td><td style="font-size:var(--text-xs);color:var(--bold-navy);font-weight:600">#VTA-2607</td><td>Mesa 2</td><td>Ana R.</td><td class="r">$72.360</td><td class="r bold">$8.000</td><td class="r"><span class="chip chip-g">11.1%</span></td><td>Efectivo</td></tr>
+            <tr><td style="font-size:var(--text-xs)">09:28</td><td style="font-size:var(--text-xs);color:var(--bold-navy);font-weight:600">#VTA-2605</td><td>Mesa 4</td><td>Mónica L.</td><td class="r">$50.000</td><td class="r bold">$5.000</td><td class="r"><span class="chip chip-g">10.0%</span></td><td>Nequi</td></tr>
+            <tr><td style="font-size:var(--text-xs)">09:10</td><td style="font-size:var(--text-xs);color:var(--bold-navy);font-weight:600">#VTA-2604</td><td>Mesa 6</td><td>Carlos M.</td><td class="r">$42.000</td><td class="r bold">$5.000</td><td class="r"><span class="chip chip-g">11.9%</span></td><td>Efectivo</td></tr>
+            <tr class="total-row">
+              <td colspan="4" style="color:var(--bold-navy);font-weight:700">Total propinas hoy (19 de 22 órdenes)</td>
+              <td class="r" style="color:var(--gray-500)">—</td>
+              <td class="r" style="font-size:var(--text-base);color:var(--bold-navy);font-weight:700">$312.000</td>
+              <td class="r" style="color:var(--gray-500)">12.1%</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div class="pg-info">Mostrando 7 de 19 transacciones con propina</div>
+        <div class="pg-btns">
+          <button class="pg-btn">‹</button>
+          <button class="pg-btn cur">1</button>
+          <button class="pg-btn">2</button>
+          <button class="pg-btn">3</button>
+          <button class="pg-btn">›</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+<script>
+const chartReg = {};
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  document.querySelector('[data-target="' + id + '"]').classList.add('active');
+  if (!chartReg[id]) { chartReg[id] = true; initChartsFor(id); }
+}
+
+function initChartsFor(id) {
+  if (id === 'dashboard') { initWeekly(); initPay(); }
+  if (id === 'menu') { initMatrix(); }
+  if (id === 'ops') { initHeatmap(); initWaiter(); }
+  if (id === 'fin') { initTrend(); initChannel(); }
+  if (id === 'ocupacion') { initOcuMesas(); initOcuHoras(); initOcuHeatmap(); }
+  if (id === 'propinas') { initTipsMesero(); initTipsDia(); }
+}
+
+// Bold POS color palette for charts
+const C = { navy:'#1B2A5C', navyLight:'#2D3E7A', blue:'#4A90D9', green:'#27AE60', red:'#E83A5A', gold:'#F5A623', gray400:'#8A92A6', gray300:'#B0B9CE', gray200:'#D4D9E8' };
+
+Chart.defaults.font.family = "'Plus Jakarta Sans', system-ui, sans-serif";
+
+function mkChart(id, cfg) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  if (el._chart) { el._chart.destroy(); }
+  const ch = new Chart(el, cfg);
+  el._chart = ch;
+  return ch;
+}
+
+function initWeekly() {
+  mkChart('ch-weekly', {
+    type: 'bar',
+    data: {
+      labels: ['Sáb 19','Dom 20','Lun 21','Mar 22','Mié 23','Jue 24','Vie 25'],
+      datasets: [
+        {
+          label: 'Esta semana',
+          data: [4100000, 4800000, 2300000, 2100000, 2900000, 3400000, 4287500],
+          backgroundColor: (ctx) => ctx.dataIndex === 6 ? C.navy : C.navy + '88',
+          borderRadius: 6, borderSkipped: false
+        },
+        {
+          label: 'Semana anterior',
+          data: [3500000, 4100000, 2050000, 1980000, 2700000, 3100000, 3820000],
+          backgroundColor: C.gray200,
+          borderRadius: 6, borderSkipped: false
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ' $' + ctx.raw.toLocaleString('es-CO') }
+      }},
+      scales: {
+        x: { grid: { color: 'rgba(27,42,92,.04)' }, ticks: { color: C.gray400, font: { size: 11 } } },
+        y: { grid: { color: 'rgba(27,42,92,.06)' }, ticks: { color: C.gray400, font: { size: 11 }, callback: v => '$' + (v/1000000).toFixed(1) + 'M' }, border: { display: false } }
+      }
+    }
+  });
+}
+
+function initPay() {
+  mkChart('ch-pay', {
+    type: 'doughnut',
+    data: {
+      labels: ['Efectivo','Nequi/Daviplata','Tarjeta débito','Tarjeta crédito','QR otros'],
+      datasets: [{ data: [28, 27, 22, 18, 5], backgroundColor: [C.gold, C.green, C.blue, C.navy, C.gray400], borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '68%',
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + ctx.raw + '%' } } }
+    }
+  });
+}
+
+function initMatrix() {
+  const items = [
+    { label:'Pizza Pepperoni', x:42, y:72, cat:'star' },
+    { label:'Burger Clásica', x:48, y:66, cat:'star' },
+    { label:'BBQ Bacon Burger', x:35, y:66, cat:'star' },
+    { label:'Papas Fritas', x:65, y:72, cat:'cow' },
+    { label:'Limonada de Coco', x:58, y:83, cat:'cow' },
+    { label:'Cerveza Águila', x:34, y:69, cat:'cow' },
+    { label:'Pizza 4 Quesos', x:18, y:71, cat:'q' },
+    { label:'Pizza Margarita', x:14, y:77, cat:'q' },
+    { label:'Nachos con Queso', x:8, y:68, cat:'q' },
+    { label:'Veggie Smash', x:12, y:69, cat:'q' },
+    { label:'Alitas BBQ', x:15, y:50, cat:'dog' },
+    { label:'Ensalada César', x:6, y:72, cat:'dog' },
+  ];
+  const colors = { star: C.gold, cow: C.green, q: C.blue, dog: C.red };
+  const datasets = ['star','cow','q','dog'].map(cat => ({
+    label: cat,
+    data: items.filter(i=>i.cat===cat).map(i=>({x:i.x, y:i.y, label:i.label})),
+    backgroundColor: colors[cat] + 'CC',
+    pointRadius: 10, pointHoverRadius: 12
+  }));
+
+  const quadPlugin = {
+    id: 'quad',
+    beforeDraw(chart) {
+      const {ctx, chartArea: {left, right, top, bottom}} = chart;
+      const xMid = chart.scales.x.getPixelForValue(27);
+      const yMid = chart.scales.y.getPixelForValue(65);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(27,42,92,.12)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath(); ctx.moveTo(xMid, top); ctx.lineTo(xMid, bottom); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(left, yMid); ctx.lineTo(right, yMid); ctx.stroke();
+      const qLabels = [
+        {x: left+8, y: top+16, t: '❓ ACERTIJO', col: 'rgba(74,144,217,.5)'},
+        {x: xMid+8, y: top+16, t: '⭐ ESTRELLA', col: 'rgba(245,166,35,.6)'},
+        {x: left+8, y: bottom-8, t: '🐶 PERRO', col: 'rgba(232,58,90,.5)'},
+        {x: xMid+8, y: bottom-8, t: '🐄 VACA', col: 'rgba(39,174,96,.5)'},
+      ];
+      ctx.restore();
+      qLabels.forEach(q => {
+        ctx.save();
+        ctx.fillStyle = q.col;
+        ctx.font = "700 10px 'Plus Jakarta Sans', sans-serif";
+        ctx.fillText(q.t, q.x, q.y);
+        ctx.restore();
+      });
+    }
+  };
+
+  mkChart('ch-matrix', {
+    type: 'bubble',
+    plugins: [quadPlugin],
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const d = ctx.raw;
+              return ` ${d.label} — Popularidad: ${d.x} uds · Margen: ${d.y}%`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          min: 0, max: 75,
+          title: { display: true, text: 'Popularidad (unidades vendidas)', color: C.gray400, font: { size: 11 } },
+          grid: { color: 'rgba(27,42,92,.06)' },
+          ticks: { color: C.gray400, font: { size: 11 } },
+          border: { display: false }
+        },
+        y: {
+          min: 40, max: 90,
+          title: { display: true, text: 'Margen de contribución (%)', color: C.gray400, font: { size: 11 } },
+          grid: { color: 'rgba(27,42,92,.06)' },
+          ticks: { color: C.gray400, font: { size: 11 }, callback: v => v + '%' },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function initHeatmap() {
+  const hours = ['11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm'];
+  const days = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const data = [
+    [2,2,2,2,3,4,5],
+    [5,4,5,5,6,8,8],
+    [8,7,8,8,9,10,10],
+    [7,6,7,7,8,9,9],
+    [4,3,4,4,5,6,7],
+    [2,2,2,3,3,4,5],
+    [3,2,3,3,5,6,5],
+    [5,4,5,6,8,9,7],
+    [7,6,7,8,9,10,8],
+    [8,6,7,8,10,10,7],
+    [5,4,5,6,8,8,5],
+    [2,2,3,4,5,5,3],
+  ];
+  const hm = document.getElementById('heatmap');
+  if (!hm) return;
+  hm.innerHTML = '';
+  const emptyCorner = document.createElement('div');
+  hm.appendChild(emptyCorner);
+  days.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'hm-hdr'; el.textContent = d;
+    hm.appendChild(el);
+  });
+  hours.forEach((h, hi) => {
+    const lbl = document.createElement('div');
+    lbl.className = 'hm-lbl'; lbl.textContent = h;
+    hm.appendChild(lbl);
+    days.forEach((_, di) => {
+      const v = data[hi][di];
+      const cell = document.createElement('div');
+      cell.className = 'hm-cell' + (v > 0 ? ' has-data' : '');
+      const alpha = v === 0 ? 0.04 : (v / 10 * 0.82 + 0.08);
+      cell.style.background = `rgba(27,42,92,${alpha.toFixed(2)})`;
+      cell.title = `${h} · ${days[di]} · Intensidad ${v}/10`;
+      hm.appendChild(cell);
+    });
+  });
+}
+
+function initWaiter() {
+  mkChart('ch-waiter', {
+    type: 'bar',
+    data: {
+      labels: ['Carlos M.','Ana R.','Mónica L.','David P.'],
+      datasets: [{
+        data: [2847000, 2341000, 2156000, 1893000],
+        backgroundColor: [C.navy, C.navy + 'BB', C.navy + '88', C.navy + '55'],
+        borderRadius: 6, borderSkipped: false
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ' $' + ctx.raw.toLocaleString('es-CO') }
+      }},
+      scales: {
+        x: { grid: { color: 'rgba(27,42,92,.06)' }, ticks: { color: C.gray400, font: { size: 10.5 }, callback: v => '$' + (v/1000000).toFixed(1) + 'M' }, border: { display: false } },
+        y: { grid: { display: false }, ticks: { color: C.navy, font: { size: 12, weight: 600 } } }
+      }
+    }
+  });
+}
+
+function initTrend() {
+  mkChart('ch-trend', {
+    type: 'line',
+    data: {
+      labels: ['Lun 12','Mar 13','Mié 14','Jue 15','Vie 16','Sáb 17','Dom 18','Lun 19','Mar 20','Mié 21','Jue 22','Vie 23','Sáb 24','Dom 25'],
+      datasets: [
+        {
+          label: 'Semana actual',
+          data: [null,null,null,null,null,null,null,4100000,4800000,2300000,2100000,2900000,3400000,4287500],
+          borderColor: C.navy, backgroundColor: 'rgba(27,42,92,.06)',
+          tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: C.navy, borderWidth: 2
+        },
+        {
+          label: 'Semana anterior',
+          data: [2100000,2400000,2800000,3100000,3800000,4100000,4600000,null,null,null,null,null,null,null],
+          borderColor: C.gray300, backgroundColor: 'transparent',
+          tension: 0.4, fill: false, pointRadius: 3, pointBackgroundColor: C.gray300, borderWidth: 1.5, borderDash: [4,4]
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false,
+        callbacks: { label: ctx => ctx.dataset.label + ': $' + (ctx.raw ? ctx.raw.toLocaleString('es-CO') : '—') }
+      }},
+      scales: {
+        x: { grid: { color: 'rgba(27,42,92,.04)' }, ticks: { color: C.gray400, font: { size: 10.5 }, maxRotation: 30 }, border: { display: false } },
+        y: { grid: { color: 'rgba(27,42,92,.06)' }, ticks: { color: C.gray400, font: { size: 11 }, callback: v => '$' + (v/1000000).toFixed(1) + 'M' }, border: { display: false } }
+      }
+    }
+  });
+}
+
+function initChannel() {
+  mkChart('ch-channel', {
+    type: 'bar',
+    data: {
+      labels: ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],
+      datasets: [
+        { label: 'Mesa', data: [2.7,3.2,1.5,1.4,2.5,2.8,3.2], backgroundColor: C.navy + 'CC', borderRadius: 4, borderSkipped: false },
+        { label: 'Mostrador', data: [1.4,1.6,0.8,0.7,1.3,1.3,1.6], backgroundColor: C.blue + 'CC', borderRadius: 4, borderSkipped: false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.raw.toFixed(1) + 'M' }
+      }},
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { color: C.gray400, font: { size: 11 } } },
+        y: { stacked: true, grid: { color: 'rgba(27,42,92,.06)' }, ticks: { color: C.gray400, font: { size: 11 }, callback: v => '$' + v + 'M' }, border: { display: false } }
+      }
+    }
+  });
+}
+
+// ---- OCUPACIÓN ----
+function initOcuMesas() {
+  mkChart('ch-ocu-mesas', {
+    type: 'bar',
+    data: {
+      labels: ['Mesa 1','Mesa 2','Mesa 3','Mesa 4','Mesa 5','Mesa 6','Mesa 7','Mesa 8','Mesa 9','Mesa 10','Mesa 11','VIP 1','VIP 2'],
+      datasets: [{
+        data: [52,55,51,47,38,49,53,45,58,44,57,94,82],
+        backgroundColor: (ctx) => {
+          const v = ctx.raw;
+          if (v > 80) return C.red + 'CC';
+          if (v > 60) return C.gold + 'CC';
+          return C.green + 'CC';
+        },
+        borderRadius: 6, borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.raw} min promedio` } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: C.gray400, font: { size: 10 }, maxRotation: 40 } },
+        y: {
+          grid: { color: 'rgba(27,42,92,.06)' },
+          ticks: { color: C.gray400, font: { size: 11 }, callback: v => v + ' min' },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function initOcuHoras() {
+  mkChart('ch-ocu-horas', {
+    type: 'line',
+    data: {
+      labels: ['11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm'],
+      datasets: [{
+        data: [25, 68, 95, 88, 55, 30, 35, 72, 91, 85, 60, 28],
+        borderColor: C.navy,
+        backgroundColor: 'rgba(27,42,92,.06)',
+        fill: true, tension: 0.45,
+        pointRadius: (ctx) => ctx.raw >= 90 ? 6 : 3,
+        pointBackgroundColor: (ctx) => ctx.raw >= 90 ? C.red : C.navy,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.raw}% ocupación` } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: C.gray400, font: { size: 10.5 } } },
+        y: {
+          min: 0, max: 100,
+          grid: { color: 'rgba(27,42,92,.06)' },
+          ticks: { color: C.gray400, font: { size: 11 }, callback: v => v + '%' },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function initOcuHeatmap() {
+  const hours = ['11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm','10pm'];
+  const days = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const data = [
+    [20,20,25,25,30,40,50],
+    [60,55,65,65,70,85,90],
+    [90,85,92,92,95,98,96],
+    [85,80,88,88,90,95,92],
+    [50,45,55,55,60,70,75],
+    [25,20,28,30,35,45,55],
+    [30,25,30,35,45,55,50],
+    [55,50,58,62,72,82,70],
+    [80,72,78,82,88,95,80],
+    [85,75,80,85,92,96,75],
+    [55,48,55,60,72,80,55],
+    [25,20,28,35,48,50,30],
+  ];
+  const hm = document.getElementById('ocu-heatmap');
+  if (!hm) return;
+  hm.innerHTML = '';
+  const corner = document.createElement('div');
+  hm.appendChild(corner);
+  days.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'hm-hdr'; el.textContent = d;
+    hm.appendChild(el);
+  });
+  hours.forEach((h, hi) => {
+    const lbl = document.createElement('div');
+    lbl.className = 'hm-lbl'; lbl.textContent = h;
+    hm.appendChild(lbl);
+    days.forEach((_, di) => {
+      const v = data[hi][di];
+      const cell = document.createElement('div');
+      cell.className = 'hm-cell';
+      const alpha = (v / 100 * 0.85 + 0.05);
+      cell.style.background = `rgba(27,42,92,${alpha.toFixed(2)})`;
+      cell.title = `${h} · ${days[di]} · ${v}% ocupación`;
+      hm.appendChild(cell);
+    });
+  });
+}
+
+// ---- PROPINAS ----
+function initTipsMesero() {
+  mkChart('ch-tips-mesero', {
+    type: 'doughnut',
+    data: {
+      labels: ['Carlos M.','Ana R.','Mónica L.','David P.'],
+      datasets: [{
+        data: [115000, 87000, 68000, 42000],
+        backgroundColor: [C.navy, C.green, C.blue, C.red + 'CC'],
+        borderWidth: 0, hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: $${ctx.raw.toLocaleString('es-CO')}` } }
+      }
+    }
+  });
+}
+
+function initTipsDia() {
+  mkChart('ch-tips-dia', {
+    type: 'bar',
+    data: {
+      labels: ['Sáb 19','Dom 20','Lun 21','Mar 22','Mié 23','Jue 24','Hoy 25'],
+      datasets: [{
+        data: [248000, 298000, 124000, 114000, 176000, 204000, 312000],
+        backgroundColor: (ctx) => ctx.dataIndex === 6 ? C.green + 'CC' : C.navy + '44',
+        borderRadius: 6, borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' $' + ctx.raw.toLocaleString('es-CO') } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: C.gray400, font: { size: 10.5 } } },
+        y: {
+          grid: { color: 'rgba(27,42,92,.06)' },
+          ticks: { color: C.gray400, font: { size: 11 }, callback: v => '$' + (v/1000) + 'K' },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+document.querySelectorAll('.ftabs').forEach(group => {
+  group.querySelectorAll('.ft').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.ft').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+});
+
+// Init dashboard charts on load
+window.addEventListener('load', () => {
+  chartReg['dashboard'] = true;
+  initChartsFor('dashboard');
+  initHeatmap();
+});
+
+// Simulate live update
+let tick = 0;
+setInterval(() => {
+  tick++;
+  const salesEl = document.getElementById('kv-sales');
+  const ordersEl = document.getElementById('kv-orders');
+  if (salesEl && document.getElementById('view-dashboard').classList.contains('active')) {
+    const base = 4287500;
+    const delta = Math.floor(Math.random() * 42000) * (tick % 3 === 0 ? 1 : 0);
+    salesEl.textContent = '$' + (base + delta).toLocaleString('es-CO');
+  }
+  if (ordersEl) {
+    const count = 6 + Math.floor(Math.random() * 3);
+    ordersEl.textContent = count + ' activos';
+  }
+}, 8000);
+</script>
+</body>
+</html>
