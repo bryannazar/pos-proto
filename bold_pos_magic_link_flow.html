@@ -1,6 +1,11 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bold POS — Flujo Magic Link</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 :root {
   --bold-navy:#1B2A5C;--bold-navy-light:#2D3E7A;--bold-navy-muted:#E8EBF5;
   --bold-red:#E83A5A;--bold-red-light:#FCE8ED;
@@ -15,17 +20,11 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--font);background:var(--gray-50);color:var(--bold-navy);font-size:14px;line-height:1.5;}
-
-/* SCREENS */
 .screen{display:none;min-height:100vh;animation:fadeIn 0.3s ease;}
 .screen.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-
-/* ── TOPBAR ── */
 .topbar{height:56px;background:#fff;border-bottom:var(--border);display:flex;align-items:center;padding:0 28px;position:sticky;top:0;z-index:10;}
-
-/* ── EMAIL SCREEN ── */
-.email-canvas{background:var(--gray-50);padding:24px 16px;font-family:var(--font);}
+.email-canvas{background:var(--gray-50);padding:24px 16px;}
 .email-client-bar{max-width:640px;margin:0 auto 12px;background:#fff;border-radius:var(--radius-lg);border:var(--border);padding:14px 20px;display:flex;flex-direction:column;gap:4px;}
 .email-meta-row{display:flex;gap:8px;font-size:12px;color:var(--gray-400);}
 .email-meta-label{font-weight:700;text-transform:uppercase;letter-spacing:0.06em;width:36px;flex-shrink:0;}
@@ -38,7 +37,7 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--bold-navy);fo
 .email-body{font-size:14px;color:var(--gray-500);line-height:1.7;}
 .email-body strong{color:var(--bold-navy);font-weight:700;}
 .email-cta-section{padding:28px 40px;text-align:center;border-bottom:var(--border);}
-.email-btn{display:inline-block;background:var(--bold-navy);color:#fff;font-family:var(--font);font-size:15px;font-weight:700;padding:16px 40px;border-radius:var(--radius-md);text-decoration:none;letter-spacing:-0.01em;cursor:pointer;border:none;transition:background 0.15s,transform 0.1s;}
+.email-btn{display:inline-block;background:var(--bold-navy);color:#fff;font-family:var(--font);font-size:15px;font-weight:700;padding:16px 40px;border-radius:var(--radius-md);cursor:pointer;border:none;transition:background 0.15s,transform 0.1s;text-decoration:none;letter-spacing:-0.01em;}
 .email-btn:hover{background:var(--bold-navy-light);}
 .email-btn:active{transform:scale(0.97);}
 .expire-badge{display:inline-flex;align-items:center;gap:6px;background:var(--gray-50);border:var(--border);border-radius:var(--radius-pill);padding:4px 12px;font-size:11px;font-weight:600;color:var(--gray-500);margin-top:10px;}
@@ -61,8 +60,6 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--bold-navy);fo
 .footer-links{display:flex;justify-content:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;}
 .footer-links a{font-size:11.5px;color:var(--gray-400);font-weight:600;text-decoration:none;}
 .footer-text{font-size:11.5px;color:var(--gray-400);line-height:1.7;}
-
-/* ── PASSWORD SCREEN ── */
 .pw-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px 48px;background:var(--gray-50);}
 .pw-card{background:#fff;border-radius:var(--radius-xl);border:var(--border);box-shadow:var(--shadow-md);padding:40px 40px 36px;width:100%;max-width:440px;}
 .icon-wrap{width:52px;height:52px;border-radius:var(--radius-lg);background:var(--bold-navy-muted);display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
@@ -71,9 +68,9 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--bold-navy);fo
 .card-sub strong{color:var(--bold-navy);font-weight:600;}
 .field-group{display:flex;flex-direction:column;gap:16px;margin-bottom:8px;}
 .field{display:flex;flex-direction:column;gap:6px;}
-.field label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--gray-400);}
+.field-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--gray-400);}
 .input-wrap{position:relative;}
-.field input{width:100%;padding:12px 44px 12px 14px;border-radius:var(--radius-md);border:var(--border);font-family:var(--font);font-size:14px;font-weight:500;color:var(--bold-navy);background:#fff;outline:none;transition:border-color 0.15s;-webkit-appearance:none;}
+.field input[type="password"],.field input[type="text"]{width:100%;padding:12px 44px 12px 14px;border-radius:var(--radius-md);border:var(--border);font-family:var(--font);font-size:14px;font-weight:500;color:var(--bold-navy);background:#fff;outline:none;transition:border-color 0.15s;-webkit-appearance:none;}
 .field input::placeholder{color:var(--gray-300);font-weight:400;}
 .field input:focus{border-color:var(--bold-navy);box-shadow:0 0 0 3px rgba(27,42,92,0.08);}
 .field input.err{border-color:var(--bold-red);}
@@ -98,34 +95,36 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--bold-navy);fo
 .req-dot{width:6px;height:6px;border-radius:50%;background:var(--gray-300);flex-shrink:0;transition:background 0.2s;}
 .req.met .req-dot{background:var(--bold-green);}
 .divider{height:1px;background:var(--gray-100);margin:24px 0;}
+.consent-group{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
+.consent-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:var(--radius-md);border:var(--border);background:#fff;transition:border-color 0.15s,background 0.15s;cursor:pointer;user-select:none;}
+.consent-item:hover{background:var(--gray-50);}
+.consent-item.checked{border-color:var(--bold-navy);background:var(--bold-navy-muted);}
+.custom-checkbox{width:18px;height:18px;border-radius:5px;border:var(--border);background:#fff;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:background 0.15s,border-color 0.15s;}
+.consent-item.checked .custom-checkbox{background:var(--bold-navy);border-color:var(--bold-navy);}
+.consent-item.checked .custom-checkbox svg{display:block;}
+.custom-checkbox svg{display:none;}
+.consent-item input[type="checkbox"]{position:absolute;opacity:0;width:0;height:0;}
+.consent-text{font-size:12.5px;color:var(--gray-500);line-height:1.55;flex:1;}
+.consent-text a{color:var(--bold-navy);font-weight:700;text-decoration:none;white-space:nowrap;}
+.consent-text a:hover{text-decoration:underline;}
 .btn-primary{width:100%;padding:14px;border-radius:var(--radius-md);background:var(--bold-navy);color:#fff;font-family:var(--font);font-size:15px;font-weight:700;border:none;cursor:pointer;transition:background 0.15s,transform 0.1s;letter-spacing:-0.01em;}
 .btn-primary:hover{background:var(--bold-navy-light);}
 .btn-primary:active{transform:scale(0.97);}
 .btn-primary:disabled{background:var(--gray-200);color:var(--gray-400);cursor:not-allowed;transform:none;}
-.legal{font-size:11.5px;color:var(--gray-400);text-align:center;margin-top:16px;line-height:1.6;}
-.legal a{color:var(--bold-navy);font-weight:600;text-decoration:none;}
 .match-indicator{position:absolute;right:44px;top:50%;transform:translateY(-50%);font-size:14px;opacity:0;transition:opacity 0.2s;}
 .match-indicator.show{opacity:1;}
-
-/* Success */
 .success-state{display:none;flex-direction:column;align-items:center;text-align:center;padding:8px 0;}
 .success-state.show{display:flex;}
 .form-state.hidden{display:none;}
 .check-anim{width:64px;height:64px;border-radius:50%;background:var(--bold-green-light);display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
-
-/* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bold-navy);color:#fff;padding:12px 20px;border-radius:var(--radius-pill);font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap;z-index:100;}
 .toast.show{transform:translateX(-50%) translateY(0);}
-
-/* Back link */
 .back-link{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-400);font-weight:600;cursor:pointer;margin-bottom:20px;text-decoration:none;transition:color 0.15s;}
 .back-link:hover{color:var(--bold-navy);}
-
-/* Logo SVG inline helper */
-.logo-svg path{fill:url(#lg);}
 </style>
+</head>
+<body>
 
-<!-- LOGO SVG defs reutilizables -->
 <svg width="0" height="0" style="position:absolute">
   <defs>
     <linearGradient id="lg" x1="81.5621" y1="14" x2="14.7324" y2="14" gradientUnits="userSpaceOnUse">
@@ -135,140 +134,85 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--bold-navy);fo
   </defs>
 </svg>
 
-<!-- ══════════════════════════════════════════ -->
-<!-- SCREEN 1: EMAIL                            -->
-<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN 1: EMAIL -->
 <div class="screen active" id="screen-email">
   <div class="topbar">
-    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="23" viewBox="0 0 96 28" fill="none">
-      <path class="logo-svg" d="M34.8998 18.1614H51.4505C51.0525 22.3658 47.4939 25.6666 43.1744 25.6666C38.855 25.6666 35.2971 22.3658 34.8991 18.1614H34.8998ZM23.0918 9.12923V25.6293C27.3069 25.2325 30.6189 21.6842 30.6189 17.3789C30.6189 13.0737 27.3069 9.52671 23.0918 9.12992V9.12923ZM43.1751 9.0919C38.8564 9.0919 35.2978 12.3941 34.8998 16.5985H51.4505C51.0525 12.3941 47.4939 9.0919 43.1744 9.0919H43.1751ZM14.7324 15.1143V25.6673H21.474V2.33398H14.7324V15.1143ZM74.8205 2.33398V25.6666H81.5621V2.33398H74.8205ZM65.724 17.3796C65.724 17.9036 65.7752 18.4151 65.8691 18.9122C66.5459 22.4999 69.5488 25.2802 73.2518 25.6286V9.12923C69.0367 9.52602 65.7247 13.0743 65.7247 17.3796H65.724ZM54.8598 25.6666H61.6014V2.33398H54.8598V25.6666Z" fill="url(#lg)"/>
-    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="23" viewBox="0 0 96 28" fill="none"><path d="M34.8998 18.1614H51.4505C51.0525 22.3658 47.4939 25.6666 43.1744 25.6666C38.855 25.6666 35.2971 22.3658 34.8991 18.1614H34.8998ZM23.0918 9.12923V25.6293C27.3069 25.2325 30.6189 21.6842 30.6189 17.3789C30.6189 13.0737 27.3069 9.52671 23.0918 9.12992V9.12923ZM43.1751 9.0919C38.8564 9.0919 35.2978 12.3941 34.8998 16.5985H51.4505C51.0525 12.3941 47.4939 9.0919 43.1744 9.0919H43.1751ZM14.7324 15.1143V25.6673H21.474V2.33398H14.7324V15.1143ZM74.8205 2.33398V25.6666H81.5621V2.33398H74.8205ZM65.724 17.3796C65.724 17.9036 65.7752 18.4151 65.8691 18.9122C66.5459 22.4999 69.5488 25.2802 73.2518 25.6286V9.12923C69.0367 9.52602 65.7247 13.0743 65.7247 17.3796H65.724ZM54.8598 25.6666H61.6014V2.33398H54.8598V25.6666Z" fill="url(#lg)"/></svg>
     <span style="font-size:12px;color:var(--gray-400);font-weight:500;">Vista previa · Correo de bienvenida</span>
   </div>
-
   <div class="email-canvas">
     <div class="email-client-bar">
       <div class="email-meta-row"><span class="email-meta-label">De:</span><span>Bold POS &lt;noreply@boldpos.com&gt;</span></div>
       <div class="email-meta-row"><span class="email-meta-label">Para:</span><span>carlos.ramirez@email.com</span></div>
       <div class="email-meta-row"><span class="email-meta-label">Asunto:</span><strong>Bienvenido a Bold POS — Termina de crear tu cuenta</strong></div>
     </div>
-
     <div class="email-wrap">
-      <!-- Header -->
       <div class="email-header">
-        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="23" viewBox="0 0 96 28" fill="none">
-          <path d="M34.8998 18.1614H51.4505C51.0525 22.3658 47.4939 25.6666 43.1744 25.6666C38.855 25.6666 35.2971 22.3658 34.8991 18.1614H34.8998ZM23.0918 9.12923V25.6293C27.3069 25.2325 30.6189 21.6842 30.6189 17.3789C30.6189 13.0737 27.3069 9.52671 23.0918 9.12992V9.12923ZM43.1751 9.0919C38.8564 9.0919 35.2978 12.3941 34.8998 16.5985H51.4505C51.0525 12.3941 47.4939 9.0919 43.1744 9.0919H43.1751ZM14.7324 15.1143V25.6673H21.474V2.33398H14.7324V15.1143ZM74.8205 2.33398V25.6666H81.5621V2.33398H74.8205ZM65.724 17.3796C65.724 17.9036 65.7752 18.4151 65.8691 18.9122C66.5459 22.4999 69.5488 25.2802 73.2518 25.6286V9.12923C69.0367 9.52602 65.7247 13.0743 65.7247 17.3796H65.724ZM54.8598 25.6666H61.6014V2.33398H54.8598V25.6666Z" fill="#ffffff"/>
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="23" viewBox="0 0 96 28" fill="none"><path d="M34.8998 18.1614H51.4505C51.0525 22.3658 47.4939 25.6666 43.1744 25.6666C38.855 25.6666 35.2971 22.3658 34.8991 18.1614H34.8998ZM23.0918 9.12923V25.6293C27.3069 25.2325 30.6189 21.6842 30.6189 17.3789C30.6189 13.0737 27.3069 9.52671 23.0918 9.12992V9.12923ZM43.1751 9.0919C38.8564 9.0919 35.2978 12.3941 34.8998 16.5985H51.4505C51.0525 12.3941 47.4939 9.0919 43.1744 9.0919H43.1751ZM14.7324 15.1143V25.6673H21.474V2.33398H14.7324V15.1143ZM74.8205 2.33398V25.6666H81.5621V2.33398H74.8205ZM65.724 17.3796C65.724 17.9036 65.7752 18.4151 65.8691 18.9122C66.5459 22.4999 69.5488 25.2802 73.2518 25.6286V9.12923C69.0367 9.52602 65.7247 13.0743 65.7247 17.3796H65.724ZM54.8598 25.6666H61.6014V2.33398H54.8598V25.6666Z" fill="#fff"/></svg>
         <span class="email-header-sub">Point of Sale</span>
       </div>
-
-      <!-- Hero -->
       <div class="email-hero">
         <div class="email-eyebrow">Invitación de acceso</div>
         <div class="email-title">Hola Carlos, estás a un paso de empezar 👋</div>
         <div class="email-body"><strong>Restaurante La Estrella</strong> acaba de ser configurado en Bold POS. El administrador de tu cuenta creó tu acceso — solo necesitas definir tu contraseña para empezar a usar el sistema.</div>
       </div>
-
-      <!-- CTA -->
       <div class="email-cta-section">
         <p style="font-size:13px;color:var(--gray-400);margin-bottom:20px;line-height:1.6;">Haz clic en el botón para definir tu contraseña y activar tu cuenta:</p>
         <button class="email-btn" onclick="goTo('screen-password')">Crear mi contraseña →</button>
         <div style="margin-top:14px;font-size:12px;color:var(--gray-400);font-weight:500;">Este enlace es de uso único y válido por:</div>
-        <div class="expire-badge">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          24 horas
-        </div>
+        <div class="expire-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>24 horas</div>
       </div>
-
-      <!-- Fallback link -->
       <div class="email-link-fallback">
-        <p>Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
-          <a href="#">https://app.boldpos.com/setup-password?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.abc123...</a>
-        </p>
+        <p>Si el botón no funciona, copia y pega este enlace en tu navegador:<br><a href="#">https://app.boldpos.com/setup-password?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.abc123...</a></p>
       </div>
-
-      <!-- Features -->
       <div class="email-features">
         <div class="features-label">Con Bold POS podrás</div>
         <div class="feature-list">
-          <div class="feature-row">
-            <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B2A5C" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
-            <div class="feature-text"><strong>Gestionar mesas en tiempo real</strong>Ver el estado del salón, abrir y cerrar cuentas fácilmente.</div>
-          </div>
-          <div class="feature-row">
-            <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B2A5C" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
-            <div class="feature-text"><strong>Registrar y enviar comandas</strong>Agrega productos, aplica modificadores y envía directo a cocina.</div>
-          </div>
-          <div class="feature-row">
-            <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B2A5C" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-            <div class="feature-text"><strong>Ver reportes de ventas</strong>Consulta ingresos, productos más vendidos y rendimiento por turno.</div>
-          </div>
+          <div class="feature-row"><div class="feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B2A5C" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div><div class="feature-text"><strong>Gestionar mesas en tiempo real</strong>Ver el estado del salón, abrir y cerrar cuentas fácilmente.</div></div>
+          <div class="feature-row"><div class="feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B2A5C" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div><div class="feature-text"><strong>Registrar y enviar comandas</strong>Agrega productos, aplica modificadores y envía directo a cocina.</div></div>
+          <div class="feature-row"><div class="feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B2A5C" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="feature-text"><strong>Ver reportes de ventas</strong>Consulta ingresos, productos más vendidos y rendimiento por turno.</div></div>
         </div>
       </div>
-
-      <!-- Security -->
       <div class="email-security">
         <div class="security-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A92A6" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
         <div class="security-text"><strong>¿No esperabas este correo?</strong>Si no solicitaste esta cuenta, ignora este mensaje. El enlace expira automáticamente. ¿Crees que es un error? Escríbenos a <a href="#" style="color:var(--bold-navy);font-weight:600;">soporte@boldpos.com</a></div>
       </div>
-
-      <!-- Footer -->
       <div class="email-footer">
-        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="17" viewBox="0 0 96 28" fill="none" style="margin-bottom:8px;">
-          <path d="M34.8998 18.1614H51.4505C51.0525 22.3658 47.4939 25.6666 43.1744 25.6666C38.855 25.6666 35.2971 22.3658 34.8991 18.1614H34.8998ZM23.0918 9.12923V25.6293C27.3069 25.2325 30.6189 21.6842 30.6189 17.3789C30.6189 13.0737 27.3069 9.52671 23.0918 9.12992V9.12923ZM43.1751 9.0919C38.8564 9.0919 35.2978 12.3941 34.8998 16.5985H51.4505C51.0525 12.3941 47.4939 9.0919 43.1744 9.0919H43.1751ZM14.7324 15.1143V25.6673H21.474V2.33398H14.7324V15.1143ZM74.8205 2.33398V25.6666H81.5621V2.33398H74.8205ZM65.724 17.3796C65.724 17.9036 65.7752 18.4151 65.8691 18.9122C66.5459 22.4999 69.5488 25.2802 73.2518 25.6286V9.12923C69.0367 9.52602 65.7247 13.0743 65.7247 17.3796H65.724ZM54.8598 25.6666H61.6014V2.33398H54.8598V25.6666Z" fill="url(#lg)"/>
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="17" viewBox="0 0 96 28" fill="none" style="margin-bottom:8px;"><path d="M34.8998 18.1614H51.4505C51.0525 22.3658 47.4939 25.6666 43.1744 25.6666C38.855 25.6666 35.2971 22.3658 34.8991 18.1614H34.8998ZM23.0918 9.12923V25.6293C27.3069 25.2325 30.6189 21.6842 30.6189 17.3789C30.6189 13.0737 27.3069 9.52671 23.0918 9.12992V9.12923ZM43.1751 9.0919C38.8564 9.0919 35.2978 12.3941 34.8998 16.5985H51.4505C51.0525 12.3941 47.4939 9.0919 43.1744 9.0919H43.1751ZM14.7324 15.1143V25.6673H21.474V2.33398H14.7324V15.1143ZM74.8205 2.33398V25.6666H81.5621V2.33398H74.8205ZM65.724 17.3796C65.724 17.9036 65.7752 18.4151 65.8691 18.9122C66.5459 22.4999 69.5488 25.2802 73.2518 25.6286V9.12923C69.0367 9.52602 65.7247 13.0743 65.7247 17.3796H65.724ZM54.8598 25.6666H61.6014V2.33398H54.8598V25.6666Z" fill="url(#lg)"/></svg>
         <div class="footer-divider"></div>
-        <div class="footer-links">
-          <a href="#">Términos de uso</a>
-          <a href="#">Privacidad</a>
-          <a href="#">Soporte</a>
-          <a href="#">Cancelar suscripción</a>
-        </div>
+        <div class="footer-links"><a href="#">Términos de uso</a><a href="#">Privacidad</a><a href="#">Soporte</a><a href="#">Cancelar suscripción</a></div>
         <div class="footer-text">Bold POS — Calle 93 #13-24, Bogotá, Colombia<br>© 2026 Bold. Todos los derechos reservados.</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════ -->
-<!-- SCREEN 2: CREAR CONTRASEÑA                 -->
-<!-- ══════════════════════════════════════════ -->
+<!-- SCREEN 2: CREAR CONTRASEÑA -->
 <div class="screen" id="screen-password">
   <div class="topbar">
-    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="23" viewBox="0 0 96 28" fill="none">
-      <path d="M34.8998 18.1614H51.4505C51.0525 22.3658 47.4939 25.6666 43.1744 25.6666C38.855 25.6666 35.2971 22.3658 34.8991 18.1614H34.8998ZM23.0918 9.12923V25.6293C27.3069 25.2325 30.6189 21.6842 30.6189 17.3789C30.6189 13.0737 27.3069 9.52671 23.0918 9.12992V9.12923ZM43.1751 9.0919C38.8564 9.0919 35.2978 12.3941 34.8998 16.5985H51.4505C51.0525 12.3941 47.4939 9.0919 43.1744 9.0919H43.1751ZM14.7324 15.1143V25.6673H21.474V2.33398H14.7324V15.1143ZM74.8205 2.33398V25.6666H81.5621V2.33398H74.8205ZM65.724 17.3796C65.724 17.9036 65.7752 18.4151 65.8691 18.9122C66.5459 22.4999 69.5488 25.2802 73.2518 25.6286V9.12923C69.0367 9.52602 65.7247 13.0743 65.7247 17.3796H65.724ZM54.8598 25.6666H61.6014V2.33398H54.8598V25.6666Z" fill="url(#lg)"/>
-    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="23" viewBox="0 0 96 28" fill="none"><path d="M34.8998 18.1614H51.4505C51.0525 22.3658 47.4939 25.6666 43.1744 25.6666C38.855 25.6666 35.2971 22.3658 34.8991 18.1614H34.8998ZM23.0918 9.12923V25.6293C27.3069 25.2325 30.6189 21.6842 30.6189 17.3789C30.6189 13.0737 27.3069 9.52671 23.0918 9.12992V9.12923ZM43.1751 9.0919C38.8564 9.0919 35.2978 12.3941 34.8998 16.5985H51.4505C51.0525 12.3941 47.4939 9.0919 43.1744 9.0919H43.1751ZM14.7324 15.1143V25.6673H21.474V2.33398H14.7324V15.1143ZM74.8205 2.33398V25.6666H81.5621V2.33398H74.8205ZM65.724 17.3796C65.724 17.9036 65.7752 18.4151 65.8691 18.9122C66.5459 22.4999 69.5488 25.2802 73.2518 25.6286V9.12923C69.0367 9.52602 65.7247 13.0743 65.7247 17.3796H65.724ZM54.8598 25.6666H61.6014V2.33398H54.8598V25.6666Z" fill="url(#lg)"/></svg>
   </div>
-
   <div class="pw-page">
     <a class="back-link" onclick="goTo('screen-email')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
       Volver al correo
     </a>
-
     <div class="pw-card">
-      <!-- FORM STATE -->
       <div class="form-state" id="formState">
         <div class="icon-wrap">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1B2A5C" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
         <div class="card-title">Crea tu contraseña</div>
         <div class="card-sub">Hola, <strong>Carlos Ramírez</strong> — configura tu acceso a Bold POS para <strong>Restaurante La Estrella</strong>.</div>
-
         <div class="field-group">
-          <!-- Campo 1 -->
           <div class="field">
-            <label>Nueva contraseña</label>
+            <span class="field-label">Nueva contraseña</span>
             <div class="input-wrap">
               <input type="password" id="pw1" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
-              <button class="toggle-btn" onclick="toggleVis('pw1',this)" tabindex="-1">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
+              <button class="toggle-btn" onclick="toggleVis('pw1',this)" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
             </div>
             <div class="strength-bar" id="strengthBar" style="display:none;">
-              <div class="strength-track">
-                <div class="strength-seg" id="seg1"></div><div class="strength-seg" id="seg2"></div><div class="strength-seg" id="seg3"></div><div class="strength-seg" id="seg4"></div>
-              </div>
+              <div class="strength-track"><div class="strength-seg" id="seg1"></div><div class="strength-seg" id="seg2"></div><div class="strength-seg" id="seg3"></div><div class="strength-seg" id="seg4"></div></div>
               <span class="strength-label" id="strengthLabel"></span>
             </div>
             <div class="requirements" id="reqs" style="display:none;">
@@ -278,27 +222,35 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--bold-navy);fo
               <div class="req" id="req-special"><span class="req-dot"></span>Un carácter especial (!@#$...)</div>
             </div>
           </div>
-
-          <!-- Campo 2 -->
           <div class="field">
-            <label>Confirmar contraseña</label>
+            <span class="field-label">Confirmar contraseña</span>
             <div class="input-wrap">
               <input type="password" id="pw2" placeholder="Repite tu contraseña" autocomplete="new-password">
               <span class="match-indicator" id="matchIcon"></span>
-              <button class="toggle-btn" onclick="toggleVis('pw2',this)" tabindex="-1">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
+              <button class="toggle-btn" onclick="toggleVis('pw2',this)" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
             </div>
             <div class="field-error" id="matchError">Las contraseñas no coinciden.</div>
           </div>
         </div>
-
         <div class="divider"></div>
+        <div class="consent-group">
+          <label class="consent-item" id="item1" onclick="toggleConsent('chk1','item1')">
+            <input type="checkbox" id="chk1">
+            <div class="custom-checkbox">
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6 5 9 10 3"/></svg>
+            </div>
+            <span class="consent-text">Aceptar términos y condiciones &nbsp;<a href="#" onclick="return false;">Ver documento ↗</a></span>
+          </label>
+          <label class="consent-item" id="item2" onclick="toggleConsent('chk2','item2')">
+            <input type="checkbox" id="chk2">
+            <div class="custom-checkbox">
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6 5 9 10 3"/></svg>
+            </div>
+            <span class="consent-text">Autorizo el tratamiento y uso de datos personales conforme a la Política de Privacidad de compañías Bold &nbsp;<a href="#" onclick="return false;">Ver documento ↗</a></span>
+          </label>
+        </div>
         <button class="btn-primary" id="submitBtn" disabled onclick="handleSubmit()">Crear cuenta y continuar</button>
-        <div class="legal">Al crear tu cuenta aceptas los <a href="#">Términos de uso</a> y la <a href="#">Política de privacidad</a> de Bold POS.</div>
       </div>
-
-      <!-- SUCCESS STATE -->
       <div class="success-state" id="successState">
         <div class="check-anim">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#27AE60" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -311,7 +263,6 @@ body{font-family:var(--font);background:var(--gray-50);color:var(--bold-navy);fo
         </div>
       </div>
     </div>
-
     <div style="margin-top:20px;font-size:12px;color:var(--gray-400);text-align:center;">
       ¿Problemas para acceder? <a href="#" style="color:var(--bold-navy);font-weight:600;text-decoration:none;">Contacta soporte</a>
     </div>
@@ -326,7 +277,13 @@ function goTo(id){
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
 }
-
+function toggleConsent(chkId,itemId){
+  const chk=document.getElementById(chkId);
+  const item=document.getElementById(itemId);
+  chk.checked=!chk.checked;
+  item.classList.toggle('checked',chk.checked);
+  validateAll();
+}
 function toggleVis(id,btn){
   const i=document.getElementById(id),t=i.type==='text';
   i.type=t?'password':'text';
@@ -334,18 +291,15 @@ function toggleVis(id,btn){
     ?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
     :'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
 }
-
 function checkStrength(pw){
   let s=0;
   const c={len:pw.length>=8,upper:/[A-Z]/.test(pw),num:/[0-9]/.test(pw),special:/[!@#$%^&*(),.?":{}|<>]/.test(pw)};
   Object.values(c).forEach(v=>{if(v)s++;});
   return{score:s,checks:c};
 }
-
 const pw1=document.getElementById('pw1');
 const pw2=document.getElementById('pw2');
 const submitBtn=document.getElementById('submitBtn');
-
 pw1.addEventListener('input',()=>{
   const val=pw1.value,sb=document.getElementById('strengthBar'),rq=document.getElementById('reqs');
   if(!val.length){sb.style.display='none';rq.style.display='none';validateAll();return;}
@@ -365,7 +319,6 @@ pw1.addEventListener('input',()=>{
   Object.entries(rm).forEach(([id,met])=>document.getElementById(id).classList.toggle('met',met));
   validateAll();
 });
-
 pw2.addEventListener('input',()=>{
   const v2=pw2.value,mi=document.getElementById('matchIcon'),me=document.getElementById('matchError');
   if(!v2.length){me.classList.remove('show');pw2.className='';mi.textContent='';mi.classList.remove('show');validateAll();return;}
@@ -378,12 +331,13 @@ pw2.addEventListener('input',()=>{
   mi.classList.toggle('show',ok);
   validateAll();
 });
-
 function validateAll(){
   const{score}=checkStrength(pw1.value);
-  submitBtn.disabled=!(score>=3&&pw1.value===pw2.value&&pw2.value.length>0);
+  const pwOk=score>=3&&pw1.value===pw2.value&&pw2.value.length>0;
+  const chk1=document.getElementById('chk1').checked;
+  const chk2=document.getElementById('chk2').checked;
+  submitBtn.disabled=!(pwOk&&chk1&&chk2);
 }
-
 function handleSubmit(){
   const t=document.getElementById('toast');
   t.classList.add('show');
@@ -397,3 +351,5 @@ function handleSubmit(){
   },1200);
 }
 </script>
+</body>
+</html>
