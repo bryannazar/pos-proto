@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bold POS — PM Intelligence Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --bold-navy:        #1B2A5C;
+  --bold-navy-light:  #2D3E7A;
+  --bold-navy-muted:  #E8EBF5;
+  --bold-red:         #E83A5A;
+  --bold-red-light:   #FCE8ED;
+  --bold-gold:        #F5A623;
+  --bold-gold-light:  #FEF3DC;
+  --bold-blue:        #4A90D9;
+  --bold-blue-light:  #E8F2FC;
+  --bold-green:       #27AE60;
+  --bold-green-light: #E6F7EE;
+  --bold-purple:      #7B5EA7;
+  --bold-purple-light:#F0ECF7;
+  --gray-50:  #F2F4F8;
+  --gray-100: #E9ECF4;
+  --gray-200: #D4D9E8;
+  --gray-300: #B0B9CE;
+  --gray-400: #8A92A6;
+  --gray-500: #636B7D;
+  --gray-600: #4A5166;
+  --font: 'Montserrat', system-ui, sans-serif;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 20px; --radius-pill: 999px;
+  --shadow-sm: 0 1px 3px rgba(27,42,92,0.06);
+  --shadow-md: 0 4px 12px rgba(27,42,92,0.09);
+  --shadow-lg: 0 8px 24px rgba(27,42,92,0.12);
+  --border: 1.5px solid var(--gray-200);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--gray-50); color: var(--bold-navy); font-size: 14px; line-height: 1.5; }
+html { scroll-behavior: smooth; }
+
+/* TOPBAR */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  height: 56px; background: #fff; border-bottom: var(--border);
+  padding: 0 32px; display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+}
+.topbar-left { display: flex; align-items: center; gap: 20px; }
+.topbar-badge { background: var(--bold-red-light); color: var(--bold-red); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-pill); }
+.topbar-right { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--gray-500); }
+.topbar-date { font-weight: 600; color: var(--bold-navy); }
+
+/* NAV TABS */
+.nav-tabs { background: #fff; border-bottom: var(--border); padding: 0 32px; display: flex; gap: 0; }
+.nav-tab { padding: 14px 20px; font-size: 13px; font-weight: 600; color: var(--gray-400); cursor: pointer; border-bottom: 2.5px solid transparent; transition: all 0.15s; white-space: nowrap; }
+.nav-tab:hover { color: var(--bold-navy); }
+.nav-tab.active { color: var(--bold-navy); border-bottom-color: var(--bold-red); }
+
+/* MAIN */
+.main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* PAGE HEADER */
+.page-header { margin-bottom: 24px; }
+.page-header h1 { font-size: 22px; font-weight: 800; color: var(--bold-navy); }
+.page-header p { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
+
+/* SECTION LABEL */
+.section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gray-400); margin-bottom: 14px; }
+
+/* GRID */
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+.grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+.grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 24px; }
+@media (max-width: 1100px) { .grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(2,1fr);} .grid-2-1,.grid-1-2{grid-template-columns:1fr;} }
+
+/* CARD */
+.card { background: #fff; border: var(--border); border-radius: var(--radius-lg); padding: 22px 24px; box-shadow: var(--shadow-sm); }
+.card-sm { padding: 16px 18px; }
+
+/* METRIC CARD */
+.metric-card { background: #fff; border: var(--border); border-radius: var(--radius-lg); padding: 20px 22px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
+.metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.metric-card.navy::before { background: var(--bold-navy); }
+.metric-card.red::before { background: var(--bold-red); }
+.metric-card.green::before { background: var(--bold-green); }
+.metric-card.gold::before { background: var(--bold-gold); }
+.metric-card.blue::before { background: var(--bold-blue); }
+.metric-card.purple::before { background: var(--bold-purple); }
+.metric-icon { width: 36px; height: 36px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 12px; }
+.metric-icon.navy { background: var(--bold-navy-muted); }
+.metric-icon.red { background: var(--bold-red-light); }
+.metric-icon.green { background: var(--bold-green-light); }
+.metric-icon.gold { background: var(--bold-gold-light); }
+.metric-icon.blue { background: var(--bold-blue-light); }
+.metric-icon.purple { background: var(--bold-purple-light); }
+.metric-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-400); margin-bottom: 6px; }
+.metric-value { font-size: 28px; font-weight: 800; color: var(--bold-navy); line-height: 1.1; }
+.metric-sub { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
+.metric-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-pill); margin-top: 8px; }
+.metric-badge.up { background: var(--bold-green-light); color: var(--bold-green); }
+.metric-badge.down { background: var(--bold-red-light); color: var(--bold-red); }
+.metric-badge.warn { background: var(--bold-gold-light); color: #B07000; }
+.metric-badge.neutral { background: var(--bold-navy-muted); color: var(--bold-navy); }
+
+/* ALERT BANNER */
+.alert-banner { border-radius: var(--radius-lg); padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.alert-banner.critical { background: var(--bold-red-light); border: 1.5px solid #f5a9b8; }
+.alert-banner.warning { background: var(--bold-gold-light); border: 1.5px solid #fad999; }
+.alert-banner.info { background: var(--bold-blue-light); border: 1.5px solid #b3d4f5; }
+.alert-banner.success { background: var(--bold-green-light); border: 1.5px solid #a8dfc0; }
+.alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.alert-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.alert-banner.critical .alert-title { color: var(--bold-red); }
+.alert-banner.warning .alert-title { color: #B07000; }
+.alert-banner.info .alert-title { color: var(--bold-blue); }
+.alert-banner.success .alert-title { color: var(--bold-green); }
+.alert-text { font-size: 12px; color: var(--gray-600); }
+
+/* TABLE */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-400); padding: 10px 12px; text-align: left; border-bottom: 1.5px solid var(--gray-200); }
+.data-table td { font-size: 13px; padding: 11px 12px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--gray-50); }
+
+/* BADGE */
+.badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: var(--radius-pill); }
+.badge-red { background: var(--bold-red-light); color: var(--bold-red); }
+.badge-gold { background: var(--bold-gold-light); color: #B07000; }
+.badge-green { background: var(--bold-green-light); color: var(--bold-green); }
+.badge-blue { background: var(--bold-blue-light); color: var(--bold-blue); }
+.badge-navy { background: var(--bold-navy-muted); color: var(--bold-navy); }
+.badge-purple { background: var(--bold-purple-light); color: var(--bold-purple); }
+.badge-gray { background: var(--gray-100); color: var(--gray-500); }
+
+/* PROGRESS */
+.progress-wrap { margin-bottom: 14px; }
+.progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.progress-label { font-size: 12px; font-weight: 600; color: var(--bold-navy); }
+.progress-pct { font-size: 12px; font-weight: 700; color: var(--gray-500); }
+.progress-bar { height: 7px; background: var(--gray-100); border-radius: var(--radius-pill); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: var(--radius-pill); transition: width 0.8s ease; }
+
+/* ROADMAP */
+.roadmap-quarter { margin-bottom: 28px; }
+.quarter-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.quarter-pill { font-size: 12px; font-weight: 800; padding: 4px 14px; border-radius: var(--radius-pill); }
+.q1 { background: var(--bold-navy); color: #fff; }
+.q2 { background: var(--bold-blue); color: #fff; }
+.q3 { background: var(--bold-purple); color: #fff; }
+.q4 { background: var(--bold-green); color: #fff; }
+.quarter-line { flex: 1; height: 1.5px; background: var(--gray-200); }
+.roadmap-items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.roadmap-item { background: #fff; border: var(--border); border-radius: var(--radius-md); padding: 16px; position: relative; overflow: hidden; }
+.roadmap-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.roadmap-item.must::before { background: var(--bold-red); }
+.roadmap-item.should::before { background: var(--bold-gold); }
+.roadmap-item.could::before { background: var(--bold-blue); }
+.roadmap-item.nice::before { background: var(--bold-green); }
+.roadmap-item-title { font-size: 13px; font-weight: 700; color: var(--bold-navy); margin-bottom: 6px; }
+.roadmap-item-desc { font-size: 12px; color: var(--gray-500); line-height: 1.5; margin-bottom: 10px; }
+.roadmap-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.roadmap-effort { font-size: 11px; font-weight: 600; color: var(--gray-400); }
+
+/* INSIGHT BOX */
+.insight-box { border-radius: var(--radius-lg); padding: 18px 20px; border: var(--border); background: #fff; }
+.insight-number { font-size: 38px; font-weight: 800; line-height: 1; }
+.insight-text { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
+
+/* CHART CONTAINER */
+.chart-wrap { position: relative; height: 220px; }
+.chart-wrap-tall { position: relative; height: 280px; }
+
+/* LIST ROW */
+.list-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+.list-row:last-child { border-bottom: none; }
+.list-rank { width: 24px; height: 24px; border-radius: 50%; background: var(--bold-navy-muted); color: var(--bold-navy); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.list-main { flex: 1; }
+.list-title { font-size: 13px; font-weight: 600; color: var(--bold-navy); }
+.list-sub { font-size: 11px; color: var(--gray-400); }
+.list-val { font-size: 14px; font-weight: 800; color: var(--bold-navy); }
+
+/* OPPORTUNITY CARD */
+.opp-card { background: #fff; border: var(--border); border-radius: var(--radius-lg); padding: 20px; border-left: 4px solid transparent; }
+.opp-card.high { border-left-color: var(--bold-red); }
+.opp-card.medium { border-left-color: var(--bold-gold); }
+.opp-card.low { border-left-color: var(--bold-blue); }
+.opp-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.opp-body { font-size: 12px; color: var(--gray-600); line-height: 1.6; }
+.opp-footer { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+/* DONUT LEGEND */
+.donut-legend { display: flex; flex-direction: column; gap: 8px; }
+.legend-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* CHURN FLAG */
+.churn-row { background: var(--bold-red-light); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 8px; border-left: 3px solid var(--bold-red); }
+.churn-row-title { font-size: 12px; font-weight: 700; color: var(--bold-red); }
+.churn-row-text { font-size: 11px; color: var(--gray-600); margin-top: 2px; }
+
+/* PLATFORM MATRIX */
+.matrix-table { width: 100%; border-collapse: collapse; }
+.matrix-table th { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-400); padding: 8px 10px; text-align: center; }
+.matrix-table td { font-size: 12px; padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--gray-100); }
+.matrix-table td:first-child { text-align: left; font-weight: 600; font-size: 12px; }
+.dot-done { display: inline-block; width: 22px; height: 22px; background: var(--bold-green); border-radius: 50%; color: #fff; font-size: 12px; line-height: 22px; }
+.dot-ns { display: inline-block; width: 22px; height: 22px; background: var(--bold-red-light); border-radius: 50%; color: var(--bold-red); font-size: 12px; line-height: 22px; font-weight: 700; }
+.dot-na { display: inline-block; width: 22px; height: 22px; background: var(--gray-100); border-radius: 50%; color: var(--gray-400); font-size: 12px; line-height: 22px; }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--gray-200); margin: 20px 0; }
+
+/* SCROLLABLE */
+.scroll-x { overflow-x: auto; }
+
+/* SUMMARY STRIP */
+.summary-strip { background: var(--bold-navy); color: #fff; border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 24px; display: flex; gap: 32px; align-items: center; flex-wrap: wrap; }
+.strip-item { text-align: center; }
+.strip-num { font-size: 28px; font-weight: 800; }
+.strip-label { font-size: 11px; font-weight: 600; opacity: 0.7; margin-top: 2px; }
+
+/* FOOTER */
+.footer { text-align: center; font-size: 11px; color: var(--gray-400); padding: 32px; margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="21" viewBox="0 0 96 28" fill="none">
+      <path d="M34.8998 18.1614H51.4505C51.0525 22.3658 47.4939 25.6666 43.1744 25.6666C38.855 25.6666 35.2971 22.3658 34.8991 18.1614H34.8998ZM23.0918 9.12923V25.6293C27.3069 25.2325 30.6189 21.6842 30.6189 17.3789C30.6189 13.0737 27.3069 9.52671 23.0918 9.12992V9.12923ZM43.1751 9.0919C38.8564 9.0919 35.2978 12.3941 34.8998 16.5985H51.4505C51.0525 12.3941 47.4939 9.0919 43.1744 9.0919H43.1751ZM14.7324 15.1143V25.6673H21.474V2.33398H14.7324V15.1143ZM74.8205 2.33398V25.6666H81.5621V2.33398H74.8205ZM65.724 17.3796C65.724 17.9036 65.7752 18.4151 65.8691 18.9122C66.5459 22.4999 69.5488 25.2802 73.2518 25.6286V9.12923C69.0367 9.52602 65.7247 13.0743 65.7247 17.3796H65.724ZM54.8598 25.6666H61.6014V2.33398H54.8598V25.6666Z" fill="url(#paint0_linear)"/>
+      <defs><linearGradient id="paint0_linear" x1="81.5621" y1="14.0007" x2="14.7324" y2="14.0006" gradientUnits="userSpaceOnUse"><stop offset="0.045" stop-color="#FF2947"/><stop offset="0.8" stop-color="#121E6C"/></linearGradient></defs>
+    </svg>
+    <span class="topbar-badge">PM INTELLIGENCE DASHBOARD</span>
+  </div>
+  <div class="topbar-right">
+    <span>Basado en datos reales del producto</span>
+    <span style="width:1px;height:16px;background:var(--gray-200);display:inline-block;"></span>
+    <span class="topbar-date">Abril 2026</span>
+  </div>
+</div>
+
+<!-- NAV TABS -->
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="showSection('overview')">📊 Overview Ejecutivo</div>
+  <div class="nav-tab" onclick="showSection('backlog')">📋 Análisis Backlog</div>
+  <div class="nav-tab" onclick="showSection('support')">🎫 Tickets de Soporte</div>
+  <div class="nav-tab" onclick="showSection('gaps')">⚠️ Gaps & Riesgos</div>
+  <div class="nav-tab" onclick="showSection('opportunities')">💡 Oportunidades</div>
+  <div class="nav-tab" onclick="showSection('roadmap')">🗺️ Roadmap 12M</div>
+</div>
+
+<div class="main">
+
+<!-- ============================================================ SECTION: OVERVIEW ============================================================ -->
+<div class="section active" id="section-overview">
+
+  <div class="page-header">
+    <h1>Overview Ejecutivo</h1>
+    <p>Resumen de la salud del producto Bold POS — Backlog 288 items · 434 tickets de soporte · 91 funcionalidades inventariadas</p>
+  </div>
+
+  <!-- ALERTS TOP -->
+  <div class="alert-banner critical">
+    <div class="alert-icon">🚨</div>
+    <div>
+      <div class="alert-title">Alerta crítica: 250 requests pendientes sin priorizar correctamente</div>
+      <div class="alert-text">El 86.8% del backlog (250 de 288 items) está en estado "Pendiente" sin scores RICE completos. Esto indica un cuello de botella en discovery y priorización que pone en riesgo el roadmap.</div>
+    </div>
+  </div>
+  <div class="alert-banner warning">
+    <div class="alert-icon">⚡</div>
+    <div>
+      <div class="alert-title">Alerta: Tickets de bugs creciendo — de 13 a 38 entre Nov/25 y Ene/26</div>
+      <div class="alert-text">Los bugs/errores escalaron +192% en 2 meses (Nov 2025: 13 → Ene 2026: 38). Aunque bajaron en Feb/Mar, la tendencia estructural es preocupante y consume capacidad del equipo de soporte.</div>
+    </div>
+  </div>
+  <div class="alert-banner warning">
+    <div class="alert-icon">🏪</div>
+    <div>
+      <div class="alert-title">Riesgo de churn documentado: 4 features bloquean conversiones activamente</div>
+      <div class="alert-text">Módulo restaurantes/bares, combos de inventario, compras a proveedores y precios con IVA incluido tienen mentions explícitas de "comercio se pierde" o "solicita devolución" en las notas del backlog.</div>
+    </div>
+  </div>
+  <div class="alert-banner info">
+    <div class="alert-icon">📱</div>
+    <div>
+      <div class="alert-title">Brecha platform-parity: App Móvil y Tablet tienen 10–19 funcionalidades sin desarrollar</div>
+      <div class="alert-text">La web está prácticamente completa (97.8% done). Las apps móviles tienen solo ~44% de paridad con web. Todas las exportaciones de reportes a Excel, ajustes de inventario y configuraciones críticas son solo-web.</div>
+    </div>
+  </div>
+
+  <!-- SUMMARY STRIP -->
+  <div class="summary-strip">
+    <div class="strip-item"><div class="strip-num">288</div><div class="strip-label">Items en Backlog</div></div>
+    <div class="strip-item"><div class="strip-num">827</div><div class="strip-label">Requests acumulados</div></div>
+    <div class="strip-item"><div class="strip-num">434</div><div class="strip-label">Tickets de soporte</div></div>
+    <div class="strip-item"><div class="strip-num">39.7%</div><div class="strip-label">Tickets son Bugs</div></div>
+    <div class="strip-item"><div class="strip-num">91</div><div class="strip-label">Funcionalidades</div></div>
+    <div class="strip-item"><div class="strip-num">4</div><div class="strip-label">Features con riesgo churn</div></div>
+    <div class="strip-item"><div class="strip-num">86.8%</div><div class="strip-label">Backlog sin ejecutar</div></div>
+  </div>
+
+  <!-- METRIC GRID -->
+  <div class="section-label">Métricas clave del producto</div>
+  <div class="grid-4" style="margin-bottom:24px;">
+    <div class="metric-card red">
+      <div class="metric-icon red">🎫</div>
+      <div class="metric-label">Bugs totales</div>
+      <div class="metric-value">172</div>
+      <div class="metric-sub">De 434 tickets de soporte</div>
+      <div class="metric-badge down">39.7% del total</div>
+    </div>
+    <div class="metric-card gold">
+      <div class="metric-icon gold">📋</div>
+      <div class="metric-label">Módulo + demandado</div>
+      <div class="metric-value">41</div>
+      <div class="metric-sub">Requests — Compras/Proveedores</div>
+      <div class="metric-badge warn">Más solicitado</div>
+    </div>
+    <div class="metric-card navy">
+      <div class="metric-icon navy">⚙️</div>
+      <div class="metric-label">RICE Score máx.</div>
+      <div class="metric-value">16.94</div>
+      <div class="metric-sub">Ventas en $0 / regalías</div>
+      <div class="metric-badge neutral">Top prioridad</div>
+    </div>
+    <div class="metric-card blue">
+      <div class="metric-icon blue">📱</div>
+      <div class="metric-label">Paridad móvil</div>
+      <div class="metric-value">44%</div>
+      <div class="metric-sub">App vs Web features</div>
+      <div class="metric-badge down">Brecha crítica</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- BACKLOG STATUS DONUT -->
+    <div class="card">
+      <div class="section-label">Estado del backlog</div>
+      <div style="display:flex; gap:24px; align-items:center;">
+        <div style="width:180px; height:180px; flex-shrink:0; position:relative;">
+          <canvas id="donutBacklog"></canvas>
+        </div>
+        <div class="donut-legend" style="flex:1;">
+          <div class="legend-row"><div class="legend-dot" style="background:#8A92A6;"></div><div style="flex:1;">Pendiente</div><strong>250 (86.8%)</strong></div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--bold-gold);"></div><div style="flex:1;">En Backlog</div><strong>30 (10.4%)</strong></div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--bold-blue);"></div><div style="flex:1;">En Análisis</div><strong>4 (1.4%)</strong></div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--bold-green);"></div><div style="flex:1;">En Desarrollo</div><strong>3 (1%)</strong></div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--bold-red);"></div><div style="flex:1;">Rechazado</div><strong>1 (0.3%)</strong></div>
+          <div style="margin-top:8px; padding:10px; background:var(--gray-50); border-radius:var(--radius-md);">
+            <div style="font-size:11px;color:var(--gray-500);">Solo 1% del backlog está en desarrollo activo. El embudo de priorización necesita urgentemente más capacidad.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TICKET TYPE BAR -->
+    <div class="card">
+      <div class="section-label">Tipos de tickets de soporte (434 total)</div>
+      <div class="chart-wrap"><canvas id="barTicketType"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <!-- TOP MODULES BY DEMAND -->
+    <div class="card">
+      <div class="section-label">Módulos más demandados (backlog)</div>
+      <div class="list-row"><div class="list-rank">1</div><div class="list-main"><div class="list-title">Reportería</div><div class="list-sub">65 items</div></div><div class="list-val">65</div></div>
+      <div class="list-row"><div class="list-rank">2</div><div class="list-main"><div class="list-title">Ventas / Comprobantes</div><div class="list-sub">62 items</div></div><div class="list-val">62</div></div>
+      <div class="list-row"><div class="list-rank">3</div><div class="list-main"><div class="list-title">Inventarios</div><div class="list-sub">39 items</div></div><div class="list-val">39</div></div>
+      <div class="list-row"><div class="list-rank">4</div><div class="list-main"><div class="list-title">Integraciones</div><div class="list-sub">24 items</div></div><div class="list-val">24</div></div>
+      <div class="list-row"><div class="list-rank">5</div><div class="list-main"><div class="list-title">Facturación Electrónica</div><div class="list-sub">18 items</div></div><div class="list-val">18</div></div>
+      <div class="list-row"><div class="list-rank">6</div><div class="list-main"><div class="list-title">UI/UX</div><div class="list-sub">16 items</div></div><div class="list-val">16</div></div>
+    </div>
+
+    <!-- TICKET VOLUME TREND -->
+    <div class="card">
+      <div class="section-label">Volumen tickets por mes</div>
+      <div class="chart-wrap"><canvas id="lineTickets"></canvas></div>
+      <div style="margin-top:12px; font-size:11px; color:var(--gray-500);">Pico en Ene 2026 (69 tickets). Se debe investigar qué cambios o launches ocurrieron ese mes.</div>
+    </div>
+
+    <!-- HIGHLIGHTS/LOWLIGHTS -->
+    <div class="card">
+      <div class="section-label">Highlights & Lowlights</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="padding:10px 12px; background:var(--bold-green-light); border-radius:var(--radius-md); border-left:3px solid var(--bold-green);">
+          <div style="font-size:12px;font-weight:700;color:var(--bold-green);">✅ Web: 97.8% completa</div>
+          <div style="font-size:11px;color:var(--gray-600);margin-top:2px;">La plataforma web tiene cobertura casi completa de funcionalidades core</div>
+        </div>
+        <div style="padding:10px 12px; background:var(--bold-green-light); border-radius:var(--radius-md); border-left:3px solid var(--bold-green);">
+          <div style="font-size:12px;font-weight:700;color:var(--bold-green);">✅ Módulo Restaurantes en desarrollo</div>
+          <div style="font-size:11px;color:var(--gray-600);margin-top:2px;">El feature más demandado (39 requests) ya está en progreso</div>
+        </div>
+        <div style="padding:10px 12px; background:var(--bold-gold-light); border-radius:var(--radius-md); border-left:3px solid var(--bold-gold);">
+          <div style="font-size:12px;font-weight:700;color:#B07000;">⚠️ FE genera el 28% de tickets</div>
+          <div style="font-size:11px;color:var(--gray-600);margin-top:2px;">Facturación Electrónica es fuente constante de fricción y dudas</div>
+        </div>
+        <div style="padding:10px 12px; background:var(--bold-red-light); border-radius:var(--radius-md); border-left:3px solid var(--bold-red);">
+          <div style="font-size:12px;font-weight:700;color:var(--bold-red);">❌ 0 integraciones e-commerce activas</div>
+          <div style="font-size:11px;color:var(--gray-600);margin-top:2px;">Shopify, WooCommerce, Tienda Nube: 22 requests sin RICE score asignado</div>
+        </div>
+        <div style="padding:10px 12px; background:var(--bold-red-light); border-radius:var(--radius-md); border-left:3px solid var(--bold-red);">
+          <div style="font-size:12px;font-weight:700;color:var(--bold-red);">❌ Módulo Compras/Proveedores ausente</div>
+          <div style="font-size:11px;color:var(--gray-600);margin-top:2px;">41 requests, 2 churns documentados, aún "En Backlog"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ SECTION: BACKLOG ============================================================ -->
+<div class="section" id="section-backlog">
+
+  <div class="page-header">
+    <h1>Análisis del Backlog</h1>
+    <p>288 items · 827 requests acumulados de clientes y leads · 12 items con RICE Score calculado</p>
+  </div>
+
+  <div class="grid-4">
+    <div class="metric-card green">
+      <div class="metric-icon green">📊</div>
+      <div class="metric-label">Total requests</div>
+      <div class="metric-value">827</div>
+      <div class="metric-sub">Acumulado en todo el backlog</div>
+    </div>
+    <div class="metric-card red">
+      <div class="metric-icon red">🏷️</div>
+      <div class="metric-label">Features (vs Optimiz.)</div>
+      <div class="metric-value">88%</div>
+      <div class="metric-sub">254 features / 34 optimizations</div>
+    </div>
+    <div class="metric-card gold">
+      <div class="metric-icon gold">⚡</div>
+      <div class="metric-label">Sin RICE Score</div>
+      <div class="metric-value">276</div>
+      <div class="metric-sub">De 288 items (95.8%)</div>
+    </div>
+    <div class="metric-card navy">
+      <div class="metric-icon navy">📅</div>
+      <div class="metric-label">Período cubierto</div>
+      <div class="metric-value">2+ años</div>
+      <div class="metric-sub">Mar 2024 — Abr 2026</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- TOP RICE TABLE -->
+    <div class="card">
+      <div class="section-label">Top 12 items por RICE Score (items con score asignado)</div>
+      <div class="scroll-x">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Request</th>
+              <th>Estado</th>
+              <th>Reqs</th>
+              <th>RICE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td style="font-weight:600;max-width:220px;">Vender con totales $0 / regalías</td><td><span class="badge badge-gold">En Backlog</span></td><td>10</td><td style="font-weight:800;color:var(--bold-green);">16.94</td></tr>
+            <tr><td>2</td><td style="font-weight:600;max-width:220px;">Módulo Restaurantes / Bares</td><td><span class="badge badge-green">En Desarrollo</span></td><td>39</td><td style="font-weight:800;color:var(--bold-green);">14.40</td></tr>
+            <tr><td>3</td><td style="font-weight:600;max-width:220px;">Múltiples Bodegas en sucursal</td><td><span class="badge badge-blue">En Análisis</span></td><td>11</td><td style="font-weight:800;color:var(--bold-green);">12.10</td></tr>
+            <tr><td>4</td><td style="font-weight:600;max-width:220px;">Precios con IVA incluido en venta</td><td><span class="badge badge-gold">En Backlog</span></td><td>26</td><td style="font-weight:800;color:var(--bold-blue);">12.00</td></tr>
+            <tr><td>5</td><td style="font-weight:600;max-width:220px;">Documento Soporte Electrónico</td><td><span class="badge badge-green">En Desarrollo</span></td><td>28</td><td style="font-weight:800;color:var(--bold-blue);">11.20</td></tr>
+            <tr><td>6</td><td style="font-weight:600;max-width:220px;">Alertas de stock mínimo</td><td><span class="badge badge-gold">En Backlog</span></td><td>9</td><td style="font-weight:800;color:var(--bold-blue);">10.37</td></tr>
+            <tr><td>7</td><td style="font-weight:600;max-width:220px;">Devoluciones de inventario</td><td><span class="badge badge-gold">En Backlog</span></td><td>5</td><td style="font-weight:800;">9.68</td></tr>
+            <tr><td>8</td><td style="font-weight:600;max-width:220px;">Compras y CxP a Proveedores</td><td><span class="badge badge-gold">En Backlog</span></td><td>41</td><td style="font-weight:800;">8.07</td></tr>
+            <tr><td>9</td><td style="font-weight:600;max-width:220px;">NC en reportes / Dashboard</td><td><span class="badge badge-blue">En Análisis</span></td><td>17</td><td style="font-weight:800;">2.74</td></tr>
+            <tr><td>10</td><td style="font-weight:600;max-width:220px;">Módulo Contable</td><td><span class="badge badge-gray">Pendiente</span></td><td>17</td><td style="font-weight:800;">2.40</td></tr>
+            <tr><td>11</td><td style="font-weight:600;max-width:220px;">Impresión nativa móvil/tablet</td><td><span class="badge badge-gray">Pendiente</span></td><td>10</td><td style="font-weight:800;">1.44</td></tr>
+            <tr><td>12</td><td style="font-weight:600;max-width:220px;">Integraciones eCommerce (Shopify)</td><td><span class="badge badge-gray">Pendiente</span></td><td>22</td><td style="font-weight:800;">0.72</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MODULE CHART + TYPE -->
+    <div class="card">
+      <div class="section-label">Distribución por módulo (items en backlog)</div>
+      <div class="chart-wrap-tall"><canvas id="barModules"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;">
+    <div class="section-label">Items críticos pendientes: mayor demanda SIN score RICE</div>
+    <div class="scroll-x">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Módulo</th>
+            <th>Request</th>
+            <th>Estado</th>
+            <th>No. Requests</th>
+            <th>Riesgo</th>
+            <th>Acción sugerida</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-navy">Inventarios</span></td>
+            <td>Funcionalidad de combos (combo = descuenta ingredientes)</td>
+            <td><span class="badge badge-gray">Pendiente</span></td>
+            <td><strong>21</strong></td>
+            <td><span class="badge badge-red">Churn</span></td>
+            <td style="font-size:11px;color:var(--gray-500);">Asignar RICE, mover a En Análisis</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-navy">FE</span></td>
+            <td>Módulo retenciones (Reteica / Retefuentes)</td>
+            <td><span class="badge badge-gray">Pendiente</span></td>
+            <td><strong>12</strong></td>
+            <td><span class="badge badge-gold">Alto</span></td>
+            <td style="font-size:11px;color:var(--gray-500);">Regulatorio — priorizar</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-navy">FE</span></td>
+            <td>Módulo Nómina Electrónica</td>
+            <td><span class="badge badge-gray">Pendiente</span></td>
+            <td><strong>12</strong></td>
+            <td><span class="badge badge-gold">Alto</span></td>
+            <td style="font-size:11px;color:var(--gray-500);">Regulatorio — evaluar build vs partner</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-navy">Integraciones</span></td>
+            <td>Integración básculas / balanzas (Fruvers)</td>
+            <td><span class="badge badge-gray">Pendiente</span></td>
+            <td><strong>11</strong></td>
+            <td><span class="badge badge-blue">Medio</span></td>
+            <td style="font-size:11px;color:var(--gray-500);">Verticales específicas — evaluar TAM</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-navy">Ventas</span></td>
+            <td>Control pagos crédito (Sistecredito / ADDI)</td>
+            <td><span class="badge badge-gray">Pendiente</span></td>
+            <td><strong>10</strong></td>
+            <td><span class="badge badge-gold">Alto</span></td>
+            <td style="font-size:11px;color:var(--gray-500);">Integración financiera — alto valor</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-navy">Comercial</span></td>
+            <td>Pago del plan en cuotas</td>
+            <td><span class="badge badge-gray">Pendiente</span></td>
+            <td><strong>9</strong></td>
+            <td><span class="badge badge-gold">Alto</span></td>
+            <td style="font-size:11px;color:var(--gray-500);">Barrera de conversión — escalar a pricing</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-navy">Reportería</span></td>
+            <td>Dashboard por sucursal con permisos</td>
+            <td><span class="badge badge-gray">Pendiente</span></td>
+            <td><strong>9</strong></td>
+            <td><span class="badge badge-blue">Medio</span></td>
+            <td style="font-size:11px;color:var(--gray-500);">Multi-sucursal — prioridad para grandes cuentas</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-navy">Integraciones</span></td>
+            <td>WooCommerce (WordPress)</td>
+            <td><span class="badge badge-gray">Pendiente</span></td>
+            <td><strong>9</strong></td>
+            <td><span class="badge badge-blue">Medio</span></td>
+            <td style="font-size:11px;color:var(--gray-500);">Omnicanal — parte de estrategia eCommerce</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BACKLOG QUALITY ALERT -->
+  <div class="alert-banner critical">
+    <div class="alert-icon">📊</div>
+    <div>
+      <div class="alert-title">Problema de datos: 95.8% del backlog no tiene RICE Score</div>
+      <div class="alert-text">Solo 12 de 288 items tienen RICE Score calculado. Además, muchos items en "Pendiente" no tienen Reach, Impact ni Effort asignados. Esto hace imposible priorizar con confianza. Recomendación: hacer una sesión de RICE scoring del top 50 items con el equipo antes del próximo sprint planning.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ SECTION: SUPPORT ============================================================ -->
+<div class="section" id="section-support">
+
+  <div class="page-header">
+    <h1>Análisis de Tickets de Soporte</h1>
+    <p>434 tickets analizados · Oct 2025 — Mar 2026 · Categorías: Bugs, FE, Consultas, Ayuda General</p>
+  </div>
+
+  <div class="grid-4">
+    <div class="metric-card red">
+      <div class="metric-icon red">🐛</div>
+      <div class="metric-label">Bugs / Errores</div>
+      <div class="metric-value">172</div>
+      <div class="metric-sub">39.7% de todos los tickets</div>
+      <div class="metric-badge down">Prioridad máx.</div>
+    </div>
+    <div class="metric-card gold">
+      <div class="metric-icon gold">🧾</div>
+      <div class="metric-label">Ayuda en FE</div>
+      <div class="metric-value">78</div>
+      <div class="metric-sub">18% — Facturación Electrónica</div>
+      <div class="metric-badge warn">UX mejorable</div>
+    </div>
+    <div class="metric-card blue">
+      <div class="metric-icon blue">❓</div>
+      <div class="metric-label">Dudas / Consultas</div>
+      <div class="metric-value">57</div>
+      <div class="metric-sub">13.1% — gaps en onboarding/docs</div>
+      <div class="metric-badge neutral">Documentar</div>
+    </div>
+    <div class="metric-card navy">
+      <div class="metric-icon navy">🌐</div>
+      <div class="metric-label">Tickets desde Web</div>
+      <div class="metric-value">87.6%</div>
+      <div class="metric-sub">380 de 434 tickets</div>
+      <div class="metric-badge neutral">Plataforma dominante</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-label">Evolución de bugs por mes</div>
+      <div class="chart-wrap"><canvas id="lineBugs"></canvas></div>
+      <div style="margin-top:12px; padding:12px; background:var(--bold-red-light); border-radius:var(--radius-md);">
+        <div style="font-size:12px;font-weight:700;color:var(--bold-red);">⚠️ Pico crítico: 38 bugs en Enero 2026</div>
+        <div style="font-size:11px;color:var(--gray-600);margin-top:3px;">Esto representa un aumento del 192% vs Noviembre 2025 (13 bugs). Posiblemente causado por un release grande. Investigar qué cambió en Dic/Ene.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-label">Distribución por tipo (acumulado)</div>
+      <div style="display:flex;gap:20px;align-items:center;">
+        <div style="width:200px;height:200px;flex-shrink:0;"><canvas id="donutTickets"></canvas></div>
+        <div class="donut-legend" style="flex:1;">
+          <div class="legend-row"><div class="legend-dot" style="background:var(--bold-red);"></div><div style="flex:1;">Bug/Error</div><strong>172 (39.7%)</strong></div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--bold-gold);"></div><div style="flex:1;">Ayuda en FE</div><strong>78 (18%)</strong></div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--bold-blue);"></div><div style="flex:1;">Duda o Consulta</div><strong>57 (13.1%)</strong></div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--bold-green);"></div><div style="flex:1;">Ayuda General</div><strong>47 (10.8%)</strong></div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--gray-300);"></div><div style="flex:1;">Otro</div><strong>20 (4.6%)</strong></div>
+          <div class="legend-row"><div class="legend-dot" style="background:var(--gray-100);"></div><div style="flex:1;">Sin clasificar</div><strong>60 (13.8%)</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;">
+    <div class="section-label">Categorías detectadas en descripciones de tickets (análisis de texto)</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:4px;">
+      <div>
+        <div class="progress-wrap">
+          <div class="progress-header"><span class="progress-label">Bugs / Errores UI</span><span class="progress-pct">126</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--bold-red);"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-header"><span class="progress-label">Factura Electrónica</span><span class="progress-pct">121</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:96%;background:var(--bold-gold);"></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="progress-wrap">
+          <div class="progress-header"><span class="progress-label">Reportes / Dashboard</span><span class="progress-pct">102</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:81%;background:var(--bold-blue);"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-header"><span class="progress-label">Inventario / Items</span><span class="progress-pct">90</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:71%;background:var(--bold-navy);"></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="progress-wrap">
+          <div class="progress-header"><span class="progress-label">Usuarios / Permisos</span><span class="progress-pct">39</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:31%;background:var(--bold-purple);"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-header"><span class="progress-label">Configuración</span><span class="progress-pct">34</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:27%;background:var(--bold-green);"></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="progress-wrap">
+          <div class="progress-header"><span class="progress-label">Impresión</span><span class="progress-pct">18</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:14%;background:var(--gray-400);"></div></div>
+        </div>
+        <div style="font-size:11px;color:var(--gray-400);margin-top:8px;">*Análisis basado en keywords en descripciones. Un ticket puede caer en múltiples categorías.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUPPORT PLATFORM BREAKDOWN -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-label">Tickets por plataforma</div>
+      <div class="chart-wrap"><canvas id="barPlatform"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-label">Insight: Problemas recurrentes detectados</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="padding:10px 12px;background:var(--gray-50);border-radius:var(--radius-md);border-left:3px solid var(--bold-red);">
+          <div style="font-size:12px;font-weight:700;">🔴 Usuario eliminado no se puede recriar</div>
+          <div style="font-size:11px;color:var(--gray-500);">3+ tickets del mismo bug. Bloquea operación del comercio.</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--gray-50);border-radius:var(--radius-md);border-left:3px solid var(--bold-red);">
+          <div style="font-size:12px;font-weight:700;">🔴 Inconsistencias Dashboard vs Reportes</div>
+          <div style="font-size:11px;color:var(--gray-500);">Múltiples comercios reportan valores diferentes en CxC vs Dashboard.</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--gray-50);border-radius:var(--radius-md);border-left:3px solid var(--bold-gold);">
+          <div style="font-size:12px;font-weight:700;">🟡 FE: Resolución inválida / problemas numeración</div>
+          <div style="font-size:11px;color:var(--gray-500);">Alta fricción en setup de facturación. Requiere documentación + mejora UX.</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--gray-50);border-radius:var(--radius-md);border-left:3px solid var(--bold-gold);">
+          <div style="font-size:12px;font-weight:700;">🟡 Importación masiva de items falla silenciosamente</div>
+          <div style="font-size:11px;color:var(--gray-500);">Items no se importan sin mostrar error. Causa confusión y re-trabajo.</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--gray-50);border-radius:var(--radius-md);border-left:3px solid var(--bold-blue);">
+          <div style="font-size:12px;font-weight:700;">🔵 Ganancias negativas incorrectas en items</div>
+          <div style="font-size:11px;color:var(--gray-500);">Bug en cálculo de utilidad por item. Genera desconfianza en los reportes.</div>
+        </div>
+        <div style="padding:10px 12px;background:var(--gray-50);border-radius:var(--radius-md);border-left:3px solid var(--bold-blue);">
+          <div style="font-size:12px;font-weight:700;">🔵 Nombres de negocio con caracteres especiales bloqueados</div>
+          <div style="font-size:11px;color:var(--gray-500);">Validación demasiado restrictiva. Ej: "420VAPING.CO" no permitido.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ SECTION: GAPS ============================================================ -->
+<div class="section" id="section-gaps">
+
+  <div class="page-header">
+    <h1>Gaps del Producto & Riesgos</h1>
+    <p>Deficiencias identificadas en paridad de plataformas, funcionalidades críticas ausentes y riesgos de churn</p>
+  </div>
+
+  <div class="alert-banner critical">
+    <div class="alert-icon">🚨</div>
+    <div>
+      <div class="alert-title">4 features activamente causando pérdida de comercios (documentado en notas)</div>
+      <div class="alert-text">Las notas del backlog contienen menciones explícitas de "comercio se pierde", "solicita devolución" o "no toma el programa" por falta de estas features.</div>
+    </div>
+  </div>
+
+  <!-- CHURN FEATURES -->
+  <div class="section-label">Features con riesgo de churn documentado</div>
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div class="churn-row">
+      <div class="churn-row-title">🔴 Módulo Restaurantes / Bares — 39 requests</div>
+      <div class="churn-row-text">Nycole Valentina (restaurante) perdida. Urbanos Crepes no tomó el programa por falta de recetas. Sebastian Lopez Cafetería requiere pedidos vía app móvil. Miami Cocktails: "importante tener recetas". <strong>En desarrollo ✓ pero aún no entregado</strong></div>
+    </div>
+    <div class="churn-row">
+      <div class="churn-row-title">🔴 Combos de inventario (ingredientes) — 21 requests</div>
+      <div class="churn-row-text">Nycole Valentina perdida también por esto. Capital Cake Bogotá necesita combos de insumos. Faster Market necesita equivalencias (por unidad o paquete). <strong>Sin RICE score, estado: Pendiente</strong></div>
+    </div>
+    <div class="churn-row">
+      <div class="churn-row-title">🔴 Módulo Compras y CxP a Proveedores — 41 requests</div>
+      <div class="churn-row-text">VARIEDAD EMY y Lubrifiltros solicitaron devolución explícitamente por falta de este módulo. Es el feature con más requests del backlog. <strong>Estado: En Backlog con RICE 8.07</strong></div>
+    </div>
+    <div class="churn-row">
+      <div class="churn-row-title">🔴 Precios con IVA incluido en venta — 26 requests</div>
+      <div class="churn-row-text">PRODUCCIONES Y EVENTOS CASA RAMIREZ SAS (Abr 2026): "posible que solicite devolución por este problema". El precio en comprobante vs FE es diferente, genera desconfianza. <strong>Estado: En Backlog</strong></div>
+    </div>
+  </div>
+
+  <!-- PLATFORM PARITY MATRIX -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="section-label">Matrix de paridad de plataformas — funcionalidades críticas</div>
+    <div class="scroll-x">
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;width:280px;">Funcionalidad</th>
+            <th>Web</th>
+            <th>App Móvil</th>
+            <th>App Tablet</th>
+            <th>Impacto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Órdenes / Tabs</td>
+            <td><span class="dot-done">✓</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="badge badge-red">Crítico</span></td>
+          </tr>
+          <tr>
+            <td>Ajustes de inventario masivos (Excel)</td>
+            <td><span class="dot-done">✓</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="badge badge-red">Crítico</span></td>
+          </tr>
+          <tr>
+            <td>Traslado de inventario entre sucursales</td>
+            <td><span class="dot-done">✓</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="badge badge-red">Crítico</span></td>
+          </tr>
+          <tr>
+            <td>Estado de cuenta por cliente</td>
+            <td><span class="dot-done">✓</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="badge badge-gold">Alto</span></td>
+          </tr>
+          <tr>
+            <td>Impresión / Exportación Excel de reportes</td>
+            <td><span class="dot-done">✓</span></td>
+            <td><span class="dot-na">—</span></td>
+            <td><span class="dot-na">—</span></td>
+            <td><span class="badge badge-gold">Alto</span></td>
+          </tr>
+          <tr>
+            <td>Impresión de Turnos</td>
+            <td><span class="dot-done">✓</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="badge badge-gold">Alto</span></td>
+          </tr>
+          <tr>
+            <td>Perfil de empresa (Ajustes)</td>
+            <td><span class="dot-done">✓</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="badge badge-gold">Alto</span></td>
+          </tr>
+          <tr>
+            <td>Vender item no registrado</td>
+            <td><span class="dot-done">✓</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="dot-na">—</span></td>
+            <td><span class="badge badge-blue">Medio</span></td>
+          </tr>
+          <tr>
+            <td>Notas Crédito / Notas Débito</td>
+            <td><span class="dot-done">✓</span></td>
+            <td><span class="dot-na">—</span></td>
+            <td><span class="dot-na">—</span></td>
+            <td><span class="badge badge-blue">Medio</span></td>
+          </tr>
+          <tr>
+            <td>Categorías de Gastos (Ajustes)</td>
+            <td><span class="dot-done">✓</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="dot-ns">✗</span></td>
+            <td><span class="badge badge-blue">Medio</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:14px; display:flex; gap:16px; align-items:center; font-size:11px; color:var(--gray-500);">
+      <div style="display:flex;align-items:center;gap:6px;"><span class="dot-done" style="font-size:10px;width:18px;height:18px;line-height:18px;">✓</span> Disponible</div>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="dot-ns" style="font-size:10px;width:18px;height:18px;line-height:18px;">✗</span> No disponible (gap)</div>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="dot-na" style="font-size:10px;width:18px;height:18px;line-height:18px;">—</span> No aplica</div>
+    </div>
+  </div>
+
+  <!-- MODULE GAPS -->
+  <div class="section-label">Módulos completamente ausentes (vs competidores)</div>
+  <div class="grid-3">
+    <div class="opp-card high">
+      <div class="opp-title">❌ Módulo Compras / Proveedores</div>
+      <div class="opp-body">41 requests. Facturas de compra, CxP, recepción FE de proveedores, neteo IVA DIAN. Competidores como Siigo lo tienen. Dos churns documentados.</div>
+      <div class="opp-footer"><span class="badge badge-red">Crítico</span><span class="badge badge-navy">41 requests</span></div>
+    </div>
+    <div class="opp-card high">
+      <div class="opp-title">❌ Combos / Recetas / Ingredientes</div>
+      <div class="opp-body">21 requests. Si se vende un combo, que descuente automáticamente ingredientes. Esencial para restaurantes, cafeterías y food service.</div>
+      <div class="opp-footer"><span class="badge badge-red">Crítico</span><span class="badge badge-navy">21 requests</span></div>
+    </div>
+    <div class="opp-card high">
+      <div class="opp-title">❌ Retenciones (Reteica / Retefuentes)</div>
+      <div class="opp-body">12 requests. Obligatorio para muchos negocios colombianos. Sin esto, Bold POS no puede ser el sistema único de facturación para clientes medianos.</div>
+      <div class="opp-footer"><span class="badge badge-red">Regulatorio</span><span class="badge badge-navy">12 requests</span></div>
+    </div>
+    <div class="opp-card medium">
+      <div class="opp-title">❌ Integración eCommerce (Shopify/WooCommerce)</div>
+      <div class="opp-body">22 + 9 = 31 requests combinados. Comercios omnicanal están perdiendo ventas por falta de sync de inventario. Siigo y otros lo tienen.</div>
+      <div class="opp-footer"><span class="badge badge-gold">Alto</span><span class="badge badge-navy">31 requests</span></div>
+    </div>
+    <div class="opp-card medium">
+      <div class="opp-title">❌ Nómina Electrónica</div>
+      <div class="opp-body">12 requests. Regulatorio colombiano. Algunos comercios necesitan este módulo para cumplir. Evaluar build vs partner especializado.</div>
+      <div class="opp-footer"><span class="badge badge-gold">Regulatorio</span><span class="badge badge-navy">12 requests</span></div>
+    </div>
+    <div class="opp-card medium">
+      <div class="opp-title">❌ Plan Separe / Consignación</div>
+      <div class="opp-body">8 requests. Negocios de moda, calzado y joyería necesitan "apartar" items sin salirlos del inventario hasta completar el pago.</div>
+      <div class="opp-footer"><span class="badge badge-gold">Nicho valioso</span><span class="badge badge-navy">8 requests</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ SECTION: OPPORTUNITIES ============================================================ -->
+<div class="section" id="section-opportunities">
+
+  <div class="page-header">
+    <h1>Oportunidades No Vistas</h1>
+    <p>Insights estratégicos y oportunidades de crecimiento derivadas del análisis cruzado de los datos</p>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div class="opp-card high">
+      <div class="opp-title">🎯 OPP-1: Vertical Restaurantes como producto diferenciado</div>
+      <div class="opp-body">El módulo de restaurantes (39 requests, RICE 14.40) ya está en desarrollo. Pero la oportunidad es mayor: crear un <strong>"Bold POS para Restaurantes"</strong> como SKU independiente con comandas, KDS, propina automática, recetas e inventario de ingredientes. Hay un mercado enorme de F&B en Colombia que competidores como Poster, Square for Restaurants y Lightspeed atienden, y Bold podría capturar con su ventaja de precio y conocimiento local.</div>
+      <div class="opp-footer"><span class="badge badge-red">Alta prioridad</span><span class="badge badge-navy">39+ requests</span><span class="badge badge-green">Revenue potencial alto</span></div>
+    </div>
+    <div class="opp-card high">
+      <div class="opp-title">🎯 OPP-2: "Bold Commerce" — Omnicanal Shopify/WooCommerce</div>
+      <div class="opp-body">31 requests de integración eCommerce. Los negocios modernos venden en físico <strong>y</strong> digital. Sin sync de inventario con Shopify/WooCommerce, Bold pierde clientes que van a Siigo o Square. Construir un conector nativo o una API pública abriría este segmento y generaría un moat competitivo importante. Además, la integración con Tienda Nube (plataforma dominante en LATAM) amplía el TAM enormemente.</div>
+      <div class="opp-footer"><span class="badge badge-red">Alta prioridad</span><span class="badge badge-navy">22+9 requests</span><span class="badge badge-blue">Expansión mercado</span></div>
+    </div>
+    <div class="opp-card medium">
+      <div class="opp-title">💡 OPP-3: Self-service en Facturación Electrónica = reducir tickets</div>
+      <div class="opp-body">121 de 434 tickets (27.8%) están relacionados con FE. La mayoría son dudas de configuración que podrían resolverse con: (1) wizard guiado de setup de resolución DIAN, (2) checklist de habilitación, (3) tooltips contextuales, (4) centro de ayuda inline. <strong>Impacto estimado: reducir 60-70 tickets mensuales solo mejorando la UX de FE</strong>, liberando capacidad del equipo de soporte para issues más complejos.</div>
+      <div class="opp-footer"><span class="badge badge-gold">Impacto soporte</span><span class="badge badge-green">Quick win</span></div>
+    </div>
+    <div class="opp-card medium">
+      <div class="opp-title">💡 OPP-4: Financiamiento del plan = reducir barrera de entrada</div>
+      <div class="opp-body">9 comercios pidieron explícitamente poder pagar el plan en cuotas. Con precios de $963K–$1.8M/año, muchos negocios pequeños prefieren pagos mensuales. <strong>Modelo de suscripción mensual (ya existente en competidores) podría aumentar conversión significativamente</strong>. WRG Grupo Empresarial lo planteó en demo. Evaluar impacto en unit economics.</div>
+      <div class="opp-footer"><span class="badge badge-gold">Comercial</span><span class="badge badge-navy">9 requests</span><span class="badge badge-blue">Conversión</span></div>
+    </div>
+    <div class="opp-card medium">
+      <div class="opp-title">💡 OPP-5: Vertical Fruvers / Básculas — nicho desatendido</div>
+      <div class="opp-body">11 requests de integración con básculas para fruvers y pesqueras. Este segmento (tiendas de frutas, salsamentarías, pesqueras) es numeroso en Colombia y casi ningún POS lo atiende bien. La integración con básculas estándar (Mettler-Toledo, CAS) podría posicionar a Bold como el POS preferido de este nicho con inversión técnica relativamente baja.</div>
+      <div class="opp-footer"><span class="badge badge-gold">Nicho</span><span class="badge badge-navy">11 requests</span><span class="badge badge-purple">Low competition</span></div>
+    </div>
+    <div class="opp-card medium">
+      <div class="opp-title">💡 OPP-6: Comisiones de vendedores = funcionalidad de retención</div>
+      <div class="opp-body">6 requests (Mauri, Factusol, etc.) para calcular comisiones automáticas por vendedor. Esta feature no solo es solicitada sino que <strong>genera un efecto de retención doble</strong>: el dueño del negocio no puede cambiarse fácilmente de POS porque su estructura de comisiones vive ahí. Es una funcionalidad "pegajosa" con bajo effort y alto retention impact.</div>
+      <div class="opp-footer"><span class="badge badge-blue">Retención</span><span class="badge badge-green">Bajo effort</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;">
+    <div class="section-label">Alertas que posiblemente no están viendo</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;">
+      <div style="padding:14px;background:var(--bold-red-light);border-radius:var(--radius-md);">
+        <div style="font-size:13px;font-weight:700;color:var(--bold-red);margin-bottom:6px;">🚨 Los tickets de FE de Ayuda son un síntoma de onboarding roto</div>
+        <div style="font-size:12px;color:var(--gray-600);">78 tickets de "Ayuda en FE" representan horas de soporte que podrían eliminarse con documentación clara y un wizard de setup. Esto también indica que los comercios no entienden el proceso de DIAN — necesitan educación proactiva.</div>
+      </div>
+      <div style="padding:14px;background:var(--bold-gold-light);border-radius:var(--radius-md);">
+        <div style="font-size:13px;font-weight:700;color:#B07000;margin-bottom:6px;">⚠️ El backlog crece más rápido de lo que se ejecuta</div>
+        <div style="font-size:12px;color:var(--gray-600);">288 items, pero solo 3 "En Desarrollo". Sin un ritmo claro de ejecución y criterios de priorización compartidos, el backlog se convierte en un cementerio de ideas que frustra a los clientes que lo solicitaron.</div>
+      </div>
+      <div style="padding:14px;background:var(--bold-blue-light);border-radius:var(--radius-md);">
+        <div style="font-size:13px;font-weight:700;color:var(--bold-blue);margin-bottom:6px;">ℹ️ 88% del backlog son Features, no Optimizations</div>
+        <div style="font-size:12px;color:var(--gray-600);">Esto indica que Bold POS está en modo expansión agresiva. Pero con casi 40% de los tickets siendo bugs, hay una tensión entre añadir features y estabilizar lo existente. Se necesita un balance explícito en el planning (ej: 30% deuda técnica / bugs, 70% features).</div>
+      </div>
+      <div style="padding:14px;background:var(--bold-purple-light);border-radius:var(--radius-md);">
+        <div style="font-size:13px;font-weight:700;color:var(--bold-purple);margin-bottom:6px;">🔮 Pago de suscripción en cuotas puede ser un acelerador comercial</div>
+        <div style="font-size:12px;color:var(--gray-600);">WRG Grupo Empresarial y Butifarras La Soledeña lo pidieron en demos. Analizar si cambiar a modelo mensual o "pagar en X cuotas" impacta positivamente las tasas de cierre sin dañar el LTV.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPETITIVE GAPS -->
+  <div class="card">
+    <div class="section-label">Gaps vs competencia (basado en lo que los clientes mencionan que tienen otros)</div>
+    <div class="scroll-x">
+      <table class="data-table">
+        <thead>
+          <tr><th>Funcionalidad</th><th>Bold POS</th><th>Siigo</th><th>Helisa</th><th>Square</th><th>Impacto</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Módulo Compras / Proveedores</td><td><span class="badge badge-red">Ausente</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-gray">Parcial</span></td><td><span class="badge badge-red">Crítico</span></td></tr>
+          <tr><td>Integración WooCommerce</td><td><span class="badge badge-red">Ausente</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-gray">N/A</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-gold">Alto</span></td></tr>
+          <tr><td>Retenciones (Reteica/Retefuente)</td><td><span class="badge badge-red">Ausente</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-gray">N/A</span></td><td><span class="badge badge-red">Regulatorio</span></td></tr>
+          <tr><td>Módulo restaurantes / KDS</td><td><span class="badge badge-gold">En Dev</span></td><td><span class="badge badge-gray">Parcial</span></td><td><span class="badge badge-gray">N/A</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-blue">Medio</span></td></tr>
+          <tr><td>App móvil offline</td><td><span class="badge badge-gray">?</span></td><td><span class="badge badge-gray">Parcial</span></td><td><span class="badge badge-gray">N/A</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-gold">Alto</span></td></tr>
+          <tr><td>Pago mensual del plan</td><td><span class="badge badge-red">No</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-gold">Conversión</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;color:var(--gray-400);margin-top:10px;">*Análisis basado en menciones de clientes en tickets y notas del backlog. Validar con research competitivo formal.</div>
+  </div>
+
+</div>
+
+<!-- ============================================================ SECTION: ROADMAP ============================================================ -->
+<div class="section" id="section-roadmap">
+
+  <div class="page-header">
+    <h1>Roadmap Tentativo — 12 meses</h1>
+    <p>Mayo 2026 — Abril 2027 · Basado en RICE Score, demanda de clientes, riesgos de churn y oportunidades estratégicas</p>
+  </div>
+
+  <div class="alert-banner info">
+    <div class="alert-icon">ℹ️</div>
+    <div>
+      <div class="alert-title">Criterios de priorización usados</div>
+      <div class="alert-text">1. RICE Score calculado · 2. No. de requests (demanda) · 3. Riesgo de churn documentado · 4. Impacto regulatorio (DIAN) · 5. Completar plataformas (paridad móvil) · 6. Oportunidades estratégicas de expansión vertical · 7. Reducción de tickets de soporte</div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div style="display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;border-radius:2px;background:var(--bold-red);"></div> Must Have</div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;border-radius:2px;background:var(--bold-gold);"></div> Should Have</div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;border-radius:2px;background:var(--bold-blue);"></div> Could Have</div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;border-radius:2px;background:var(--bold-green);"></div> Nice to Have</div>
+  </div>
+
+  <!-- Q1 -->
+  <div class="roadmap-quarter">
+    <div class="quarter-header">
+      <span class="quarter-pill q1">Q1 — Mayo/Jun/Jul 2026</span>
+      <div class="quarter-line"></div>
+      <span style="font-size:12px;color:var(--gray-400);font-weight:600;">Estabilización + Completar churn blockers</span>
+    </div>
+    <div class="roadmap-items">
+      <div class="roadmap-item must">
+        <div class="roadmap-item-title">🍽️ Lanzar módulo Restaurantes / Bares (MVP)</div>
+        <div class="roadmap-item-desc">Comandas, mesas abiertas, propina automática, KDS básico. Ya en desarrollo. Lanzar antes de que se pierdan más comercios F&B.</div>
+        <div class="roadmap-meta"><span class="badge badge-red">Must Have</span><span class="badge badge-green">RICE 14.40</span><span class="roadmap-effort">39 requests · Churn riesgo</span></div>
+      </div>
+      <div class="roadmap-item must">
+        <div class="roadmap-item-title">💰 Precios con IVA incluido en venta</div>
+        <div class="roadmap-item-desc">Mostrar precio final (con IVA) al crear venta. Riesgo de devolución documentado. RICE 12.0, 26 requests. Quick win de experiencia.</div>
+        <div class="roadmap-meta"><span class="badge badge-red">Must Have</span><span class="badge badge-green">RICE 12.0</span><span class="roadmap-effort">26 requests · Devolución riesgo</span></div>
+      </div>
+      <div class="roadmap-item must">
+        <div class="roadmap-item-title">🐛 Sprint de estabilización de bugs críticos</div>
+        <div class="roadmap-item-desc">Dedicar el 30% de la capacidad del equipo a resolver los bugs recurrentes: usuario eliminado no se puede recrear, inconsistencias Dashboard vs Reportes, importación masiva silenciosa, ganancias negativas incorrectas.</div>
+        <div class="roadmap-meta"><span class="badge badge-red">Must Have</span><span class="badge badge-red">172 bugs activos</span><span class="roadmap-effort">Calidad del producto</span></div>
+      </div>
+      <div class="roadmap-item must">
+        <div class="roadmap-item-title">🧾 UX de Facturación Electrónica: wizard de setup</div>
+        <div class="roadmap-item-desc">Wizard paso a paso para configurar resolución DIAN, numeraciones y habilitación. Objetivo: reducir 50+ tickets mensuales de FE. 78 tickets actuales de ayuda en FE.</div>
+        <div class="roadmap-meta"><span class="badge badge-red">Must Have</span><span class="badge badge-gold">78 tickets FE</span><span class="roadmap-effort">Reduce carga soporte</span></div>
+      </div>
+      <div class="roadmap-item should">
+        <div class="roadmap-item-title">🛒 Vender con totales $0 / regalías</div>
+        <div class="roadmap-item-desc">RICE Score más alto del backlog (16.94). Permite registrar regalías, muestras y embajadores. 10 requests, fácil de implementar.</div>
+        <div class="roadmap-meta"><span class="badge badge-gold">Should Have</span><span class="badge badge-green">RICE 16.94 — el más alto</span></div>
+      </div>
+      <div class="roadmap-item should">
+        <div class="roadmap-item-title">📊 RICE Scoring de top 50 items del backlog</div>
+        <div class="roadmap-item-desc">Sesión de trabajo con el equipo para asignar RICE a los 50 items con más demanda. Solo 12/288 tienen score. Esto es fundamental para priorizar bien los próximos 3 trimestres.</div>
+        <div class="roadmap-meta"><span class="badge badge-gold">Proceso PM</span><span class="badge badge-navy">Mejora datos</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="roadmap-quarter">
+    <div class="quarter-header">
+      <span class="quarter-pill q2">Q2 — Ago/Sep/Oct 2026</span>
+      <div class="quarter-line"></div>
+      <span style="font-size:12px;color:var(--gray-400);font-weight:600;">Expansión de inventario + Módulo compras</span>
+    </div>
+    <div class="roadmap-items">
+      <div class="roadmap-item must">
+        <div class="roadmap-item-title">🏭 Módulo Compras y CxP a Proveedores (MVP)</div>
+        <div class="roadmap-item-desc">Facturas de compra, cuentas por pagar, reporte de neteo IVA DIAN. El feature con MÁS requests (41) y 2 churns documentados (VARIEDAD EMY, Lubrifiltros). RICE 8.07 pero demand es el más alto.</div>
+        <div class="roadmap-meta"><span class="badge badge-red">Must Have</span><span class="badge badge-navy">41 requests — #1 demanda</span><span class="roadmap-effort">2 churns documentados</span></div>
+      </div>
+      <div class="roadmap-item must">
+        <div class="roadmap-item-title">🍱 Combos e ingredientes de inventario</div>
+        <div class="roadmap-item-desc">Al vender un combo, descontar automáticamente ingredientes. Crítico para F&B (Capital Cake, Faster Market, Mercados). Complementa el módulo de restaurantes. 21 requests.</div>
+        <div class="roadmap-meta"><span class="badge badge-red">Must Have</span><span class="badge badge-navy">21 requests · Churn</span><span class="roadmap-effort">Complementa restaurantes</span></div>
+      </div>
+      <div class="roadmap-item should">
+        <div class="roadmap-item-title">🏦 Múltiples bodegas en sucursal</div>
+        <div class="roadmap-item-desc">11 requests, RICE 12.10. Manejar bodegas separadas dentro de un mismo punto sin abrir nueva sucursal. Esencial para negocios de distribución y manufactura.</div>
+        <div class="roadmap-meta"><span class="badge badge-gold">Should Have</span><span class="badge badge-green">RICE 12.10</span><span class="roadmap-effort">11 requests</span></div>
+      </div>
+      <div class="roadmap-item should">
+        <div class="roadmap-item-title">🔔 Alertas de stock mínimo por email</div>
+        <div class="roadmap-item-desc">RICE 10.37, 9 requests. Cuando el inventario llega a mínimo, notificar automáticamente. Feature de retención clara. Dolces Antojos y Pañalera lo piden activamente.</div>
+        <div class="roadmap-meta"><span class="badge badge-gold">Should Have</span><span class="badge badge-green">RICE 10.37</span><span class="roadmap-effort">9 requests</span></div>
+      </div>
+      <div class="roadmap-item should">
+        <div class="roadmap-item-title">📱 Paridad Móvil: Órdenes/Tabs + Ajustes de inventario</div>
+        <div class="roadmap-item-desc">Las funcionalidades críticas que están solo en Web: Órdenes/Tabs, ajuste masivo de inventario, traslado entre sucursales. Brecha de 44% de paridad móvil impide vender a negocios que operan desde el celular.</div>
+        <div class="roadmap-meta"><span class="badge badge-gold">Should Have</span><span class="badge badge-red">Solo web hoy</span><span class="roadmap-effort">Paridad plataforma</span></div>
+      </div>
+      <div class="roadmap-item could">
+        <div class="roadmap-item-title">↩️ Módulo de devoluciones de inventario</div>
+        <div class="roadmap-item-desc">RICE 9.68. Cambios y devoluciones sin eliminar la venta manualmente. Aplica a garantías, productos defectuosos. The Coffee Pub y Teamwork lo solicitan.</div>
+        <div class="roadmap-meta"><span class="badge badge-blue">Could Have</span><span class="badge badge-green">RICE 9.68</span><span class="roadmap-effort">5 requests</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="roadmap-quarter">
+    <div class="quarter-header">
+      <span class="quarter-pill q3">Q3 — Nov/Dic 2026 / Ene 2027</span>
+      <div class="quarter-line"></div>
+      <span style="font-size:12px;color:var(--gray-400);font-weight:600;">Regulatorio + Integraciones + Reportería avanzada</span>
+    </div>
+    <div class="roadmap-items">
+      <div class="roadmap-item must">
+        <div class="roadmap-item-title">📋 Retenciones Reteica / Retefuentes</div>
+        <div class="roadmap-item-desc">12 requests. Obligatorio para clientes medianos y grandes en Colombia. Sin esto, Bold POS no puede ser el sistema único de facturación para negocios B2B. Impacto regulatorio crítico.</div>
+        <div class="roadmap-meta"><span class="badge badge-red">Must Have</span><span class="badge badge-red">Regulatorio DIAN</span><span class="roadmap-effort">12 requests</span></div>
+      </div>
+      <div class="roadmap-item must">
+        <div class="roadmap-item-title">🛍️ Integración eCommerce: Shopify + Tienda Nube</div>
+        <div class="roadmap-item-desc">22 requests Shopify, mercado omnicanal creciente. Conectar inventario y ventas físicas con tienda online. Tienda Nube es el líder en LATAM. Diferenciador competitivo vs Siigo.</div>
+        <div class="roadmap-meta"><span class="badge badge-red">Must Have</span><span class="badge badge-navy">22 requests</span><span class="roadmap-effort">Expansión omnicanal</span></div>
+      </div>
+      <div class="roadmap-item should">
+        <div class="roadmap-item-title">📊 Dashboard por sucursal con permisos</div>
+        <div class="roadmap-item-desc">9 requests de negocios multi-sucursal. Ver info por sucursal según el rol del usuario. Critico para escalar a clientes con 3+ puntos de venta (Planetco, Medallo Luxury).</div>
+        <div class="roadmap-meta"><span class="badge badge-gold">Should Have</span><span class="badge badge-navy">9 requests</span><span class="roadmap-effort">Multi-sucursal</span></div>
+      </div>
+      <div class="roadmap-item should">
+        <div class="roadmap-item-title">💳 Integración crédito: Sistecredito / ADDI</div>
+        <div class="roadmap-item-desc">10 requests. Permitir ventas a crédito con financiamiento de terceros y reflejar comisiones en reportes. Alta propensión en retail de muebles, electrodomésticos y tecnología.</div>
+        <div class="roadmap-meta"><span class="badge badge-gold">Should Have</span><span class="badge badge-navy">10 requests</span><span class="roadmap-effort">Revenue por verticales</span></div>
+      </div>
+      <div class="roadmap-item should">
+        <div class="roadmap-item-title">📄 Notas Crédito en reportes y Dashboard</div>
+        <div class="roadmap-item-desc">RICE 2.74, 17 requests. Las NC anuladas no se reflejan en reportes causando confusión. Impacta la confianza en los datos financieros del comercio.</div>
+        <div class="roadmap-meta"><span class="badge badge-gold">Should Have</span><span class="badge badge-green">RICE 2.74</span><span class="roadmap-effort">17 requests</span></div>
+      </div>
+      <div class="roadmap-item could">
+        <div class="roadmap-item-title">⚖️ Integración con básculas (Fruvers / Pesqueras)</div>
+        <div class="roadmap-item-desc">11 requests. Segmento desatendido de fruverías, pesqueras y salsamentarías. Integración con básculas industriales estándar abriría un nicho nuevo con baja competencia.</div>
+        <div class="roadmap-meta"><span class="badge badge-blue">Could Have</span><span class="badge badge-purple">Nicho vertical</span><span class="roadmap-effort">11 requests</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="roadmap-quarter">
+    <div class="quarter-header">
+      <span class="quarter-pill q4">Q4 — Feb/Mar/Abr 2027</span>
+      <div class="quarter-line"></div>
+      <span style="font-size:12px;color:var(--gray-400);font-weight:600;">Crecimiento · Verticales · Funciones de retención</span>
+    </div>
+    <div class="roadmap-items">
+      <div class="roadmap-item should">
+        <div class="roadmap-item-title">📑 Nómina Electrónica</div>
+        <div class="roadmap-item-desc">12 requests. Regulatorio colombiano. Evaluar si construir in-house o integrar con un partner especializado (Nominapp, etc.). Afecta principalmente SMEs con empleados formales.</div>
+        <div class="roadmap-meta"><span class="badge badge-gold">Should Have</span><span class="badge badge-red">Regulatorio</span><span class="roadmap-effort">12 requests · Evaluar build vs buy</span></div>
+      </div>
+      <div class="roadmap-item should">
+        <div class="roadmap-item-title">👔 Comisiones automáticas por vendedor</div>
+        <div class="roadmap-item-desc">6 requests pero alto impacto en retención. Una vez configurado, el negocio no puede migrar a otro POS fácilmente. Feature pegajoso con bajo effort técnico estimado.</div>
+        <div class="roadmap-meta"><span class="badge badge-gold">Should Have</span><span class="badge badge-green">Alto retention</span><span class="roadmap-effort">6 requests · Low effort</span></div>
+      </div>
+      <div class="roadmap-item should">
+        <div class="roadmap-item-title">👗 Plan Separe / Consignación</div>
+        <div class="roadmap-item-desc">8 requests. Negocios de moda y joyería: apartar items sin sacarlos del inventario hasta completar pago. Boutique Valentina, Calzado el Mayorista, Grupo Colomboitaliana de Joyas.</div>
+        <div class="roadmap-meta"><span class="badge badge-gold">Should Have</span><span class="badge badge-navy">8 requests</span><span class="roadmap-effort">Verticales moda/joyería</span></div>
+      </div>
+      <div class="roadmap-item could">
+        <div class="roadmap-item-title">🌐 WooCommerce (WordPress) + API pública</div>
+        <div class="roadmap-item-desc">9 requests WooCommerce. Abrir una API pública permitiría a clientes conectarse con cualquier plataforma. Complementa la estrategia eCommerce de Q3 y posiciona a Bold como plataforma abierta.</div>
+        <div class="roadmap-meta"><span class="badge badge-blue">Could Have</span><span class="badge badge-navy">9 requests</span><span class="roadmap-effort">Plataforma abierta</span></div>
+      </div>
+      <div class="roadmap-item could">
+        <div class="roadmap-item-title">💰 Modelo de pago mensual del plan</div>
+        <div class="roadmap-item-desc">9 requests de demos que no cerraron por el costo anual. Evaluar modelo de suscripción mensual (aunque más caro en total) para reducir la fricción de entrada en SMEs con flujo de caja ajustado.</div>
+        <div class="roadmap-meta"><span class="badge badge-blue">Could Have</span><span class="badge badge-navy">9 requests</span><span class="roadmap-effort">Modelo comercial — validar economics</span></div>
+      </div>
+      <div class="roadmap-item nice">
+        <div class="roadmap-item-title">📚 Módulo Contable (light)</div>
+        <div class="roadmap-item-desc">17 requests pero RICE bajo (2.40) y alto esfuerzo. Evaluar si es una feature diferenciadora o si es mejor hacer partnerships con Siigo/Helisa. No debe bloquear otras prioridades.</div>
+        <div class="roadmap-meta"><span class="badge badge-green">Nice to Have</span><span class="badge badge-green">RICE 2.40</span><span class="roadmap-effort">Evaluar build vs partner</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROADMAP METRICS -->
+  <div class="card">
+    <div class="section-label">Métricas de éxito del roadmap (OKRs sugeridos)</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      <div style="padding:14px;background:var(--gray-50);border-radius:var(--radius-md);">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--bold-red);margin-bottom:8px;">Q1 — Estabilización</div>
+        <div style="font-size:12px;color:var(--gray-600);line-height:1.7;">
+          ✓ Bugs reducidos de 172 → &lt;80<br>
+          ✓ Tickets FE reducidos ≥40%<br>
+          ✓ Módulo restaurantes lanzado<br>
+          ✓ RICE scoring 50 items completado
+        </div>
+      </div>
+      <div style="padding:14px;background:var(--gray-50);border-radius:var(--radius-md);">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--bold-blue);margin-bottom:8px;">Q2 — Expansión inventario</div>
+        <div style="font-size:12px;color:var(--gray-600);line-height:1.7;">
+          ✓ Módulo Compras lanzado<br>
+          ✓ Combos de ingredientes live<br>
+          ✓ Paridad móvil ≥70%<br>
+          ✓ Churn por estas features = 0
+        </div>
+      </div>
+      <div style="padding:14px;background:var(--gray-50);border-radius:var(--radius-md);">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--bold-green);margin-bottom:8px;">Q3-Q4 — Crecimiento</div>
+        <div style="font-size:12px;color:var(--gray-600);line-height:1.7;">
+          ✓ 1ª integración eCommerce live<br>
+          ✓ Retenciones en producción<br>
+          ✓ NPS mejorado ≥5 puntos<br>
+          ✓ 0 requests de churn por módulos faltantes
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- /main -->
+
+<div class="footer">
+  Bold POS — PM Intelligence Dashboard · Generado con base en 288 backlog items, 434 tickets de soporte y 91 funcionalidades inventariadas · Abril 2026
+</div>
+
+<script>
+// NAV
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// DONUT BACKLOG
+new Chart(document.getElementById('donutBacklog'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Pendiente','En Backlog','En Análisis','En Desarrollo','Rechazado'],
+    datasets: [{ data: [250,30,4,3,1], backgroundColor: ['#8A92A6','#F5A623','#4A90D9','#27AE60','#E83A5A'], borderWidth: 0, hoverOffset: 4 }]
+  },
+  options: { responsive: true, maintainAspectRatio: true, cutout: '68%', plugins: { legend: { display: false } } }
+});
+
+// BAR TICKET TYPE
+new Chart(document.getElementById('barTicketType'), {
+  type: 'bar',
+  data: {
+    labels: ['Bug/Error','Ayuda FE','Duda/Consulta','Ayuda General','Otro','Sin clasificar'],
+    datasets: [{ data: [172,78,57,47,20,60], backgroundColor: ['#E83A5A','#F5A623','#4A90D9','#27AE60','#B0B9CE','#E9ECF4'], borderRadius: 6, borderSkipped: false }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { font: { family: "'Montserrat'", size: 10 }, color: '#8A92A6' } }, y: { grid: { color: '#E9ECF4' }, border: { display: false }, ticks: { font: { family: "'Montserrat'", size: 10 }, color: '#8A92A6' } } } }
+});
+
+// LINE TICKETS
+new Chart(document.getElementById('lineTickets'), {
+  type: 'line',
+  data: {
+    labels: ['Oct 25','Nov 25','Dic 25','Ene 26','Feb 26','Mar 26'],
+    datasets: [{ label: 'Tickets', data: [31,60,41,69,60,56], borderColor: '#1B2A5C', backgroundColor: 'rgba(27,42,92,0.08)', pointBackgroundColor: '#1B2A5C', pointRadius: 5, tension: 0.3, borderWidth: 2, fill: true }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { font: { family: "'Montserrat'", size: 11 }, color: '#8A92A6' } }, y: { grid: { color: '#E9ECF4' }, border: { display: false }, ticks: { font: { family: "'Montserrat'", size: 11 }, color: '#8A92A6' } } } }
+});
+
+// BAR MODULES
+new Chart(document.getElementById('barModules'), {
+  type: 'bar',
+  data: {
+    labels: ['Reportería','Ventas/Comp.','Inventarios','Integraciones','FE','UI/UX','Ajustes','Compras/Prov.','Cotizaciones','Vertical nueva'],
+    datasets: [{ data: [65,62,39,24,18,16,15,9,9,5], backgroundColor: '#1B2A5C', borderRadius: 5, borderSkipped: false }]
+  },
+  options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#E9ECF4' }, border: { display: false }, ticks: { font: { family: "'Montserrat'", size: 10 }, color: '#8A92A6' } }, y: { grid: { display: false }, ticks: { font: { family: "'Montserrat'", size: 10 }, color: '#636B7D' } } } }
+});
+
+// LINE BUGS
+new Chart(document.getElementById('lineBugs'), {
+  type: 'line',
+  data: {
+    labels: ['Nov 25','Dic 25','Ene 26','Feb 26','Mar 26'],
+    datasets: [
+      { label: 'Bug/Error', data: [13,17,38,29,31], borderColor: '#E83A5A', backgroundColor: 'rgba(232,58,90,0.08)', pointBackgroundColor: '#E83A5A', pointRadius: 5, tension: 0.3, borderWidth: 2, fill: true },
+      { label: 'Ayuda FE', data: [7,10,12,19,10], borderColor: '#F5A623', backgroundColor: 'transparent', pointBackgroundColor: '#F5A623', pointRadius: 4, tension: 0.3, borderWidth: 2, borderDash: [5,5] }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Montserrat'", size: 11 }, color: '#636B7D', usePointStyle: true } } }, scales: { x: { grid: { display: false }, ticks: { font: { family: "'Montserrat'", size: 11 }, color: '#8A92A6' } }, y: { grid: { color: '#E9ECF4' }, border: { display: false }, ticks: { font: { family: "'Montserrat'", size: 11 }, color: '#8A92A6' } } } }
+});
+
+// DONUT TICKETS
+new Chart(document.getElementById('donutTickets'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Bug/Error','Ayuda FE','Duda/Consulta','Ayuda General','Otro','Sin clasificar'],
+    datasets: [{ data: [172,78,57,47,20,60], backgroundColor: ['#E83A5A','#F5A623','#4A90D9','#27AE60','#B0B9CE','#E9ECF4'], borderWidth: 0, hoverOffset: 4 }]
+  },
+  options: { responsive: true, maintainAspectRatio: true, cutout: '65%', plugins: { legend: { display: false } } }
+});
+
+// PLATFORM BAR
+new Chart(document.getElementById('barPlatform'), {
+  type: 'bar',
+  data: {
+    labels: ['Web','Web+Mobile','Mobile App','Smart PRO','BackOffice'],
+    datasets: [{ data: [380,22,20,6,5], backgroundColor: ['#1B2A5C','#4A90D9','#27AE60','#F5A623','#8A92A6'], borderRadius: 6, borderSkipped: false }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { font: { family: "'Montserrat'", size: 10 }, color: '#8A92A6' } }, y: { grid: { color: '#E9ECF4' }, border: { display: false }, ticks: { font: { family: "'Montserrat'", size: 10 }, color: '#8A92A6' } } } }
+});
+
+// Animate progress bars on load
+setTimeout(() => {
+  document.querySelectorAll('.progress-fill').forEach(el => {
+    const w = el.style.width;
+    el.style.width = '0%';
+    setTimeout(() => el.style.width = w, 100);
+  });
+}, 300);
+</script>
+</body>
+</html>
