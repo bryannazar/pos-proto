@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bold POS — PM Intelligence Dashboard v4</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root {
+  --bold-navy:#1B2A5C; --bold-navy-light:#2D3E7A; --bold-navy-muted:#E8EBF5;
+  --bold-red:#E83A5A; --bold-red-light:#FCE8ED;
+  --bold-gold:#F5A623; --bold-gold-light:#FEF3DC;
+  --bold-blue:#4A90D9; --bold-blue-light:#E8F2FC;
+  --bold-green:#27AE60; --bold-green-light:#E6F7EE;
+  --bold-purple:#7B5EA7; --bold-purple-light:#F0ECF7;
+  --gray-50:#F2F4F8; --gray-100:#E9ECF4; --gray-200:#D4D9E8;
+  --gray-300:#B0B9CE; --gray-400:#8A92A6; --gray-500:#636B7D; --gray-600:#4A5166;
+  --font:'Montserrat',system-ui,sans-serif;
+  --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-xl:20px; --radius-pill:999px;
+  --shadow-sm:0 1px 3px rgba(27,42,92,0.06); --shadow-md:0 4px 12px rgba(27,42,92,0.09);
+  --border:1.5px solid var(--gray-200);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--gray-50);color:var(--bold-navy);font-size:14px;line-height:1.5;}
+
+/* ── LOGIN SCREEN ── */
+#loginScreen {
+  position:fixed;inset:0;background:var(--bold-navy);z-index:2000;
+  display:flex;align-items:center;justify-content:center;
+}
+#loginScreen.hidden{display:none;}
+.login-card {
+  background:#fff;border-radius:20px;padding:48px 40px;text-align:center;
+  width:380px;box-shadow:0 24px 64px rgba(0,0,0,0.3);
+}
+.login-title{font-size:20px;font-weight:800;margin:20px 0 8px;}
+.login-sub{font-size:13px;color:var(--gray-500);margin-bottom:32px;line-height:1.6;}
+.login-divider{height:1px;background:var(--gray-100);margin:24px 0;}
+.login-note{font-size:11px;color:var(--gray-400);line-height:1.6;}
+.google-btn {
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:12px 20px;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);
+  background:#fff;font-family:var(--font);font-size:14px;font-weight:600;color:var(--bold-navy);
+  cursor:pointer;transition:all 0.15s;
+}
+.google-btn:hover{background:var(--gray-50);border-color:var(--gray-300);}
+
+/* ── LOADING OVERLAY ── */
+.loading-overlay{
+  position:fixed;inset:0;background:rgba(27,42,92,0.88);z-index:999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+.loading-overlay.hidden{display:none;}
+.loading-logo{animation:pulse 1.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.loading-text{color:#fff;font-size:14px;font-weight:700;}
+.loading-sub{color:rgba(255,255,255,0.55);font-size:12px;}
+.loading-bar-wrap{width:220px;height:4px;background:rgba(255,255,255,0.15);border-radius:999px;overflow:hidden;}
+.loading-bar{height:100%;background:var(--bold-red);border-radius:999px;width:0%;transition:width 0.5s ease;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:sticky;top:0;z-index:100;height:56px;background:#fff;
+  border-bottom:var(--border);padding:0 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:var(--shadow-sm);
+}
+.topbar-left{display:flex;align-items:center;gap:14px;}
+.topbar-badge{background:var(--bold-red-light);color:var(--bold-red);font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;}
+.live-dot{font-size:11px;color:var(--bold-green);font-weight:700;display:none;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.user-chip{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--gray-500);}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:var(--bold-navy);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.btn-sm{border:none;padding:6px 14px;border-radius:999px;font-size:11px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all 0.15s;}
+.btn-refresh{background:var(--bold-navy);color:#fff;}
+.btn-refresh:hover{background:var(--bold-navy-light);}
+.btn-refresh.loading{opacity:0.6;pointer-events:none;}
+.btn-logout{background:var(--gray-100);color:var(--gray-600);}
+.btn-logout:hover{background:var(--gray-200);}
+
+/* ── NAV TABS ── */
+.nav-tabs{background:#fff;border-bottom:var(--border);padding:0 32px;display:flex;overflow-x:auto;}
+.nav-tab{padding:14px 18px;font-size:13px;font-weight:600;color:var(--gray-400);cursor:pointer;border-bottom:2.5px solid transparent;transition:all 0.15s;white-space:nowrap;}
+.nav-tab:hover{color:var(--bold-navy);}
+.nav-tab.active{color:var(--bold-navy);border-bottom-color:var(--bold-red);}
+
+/* ── MAIN LAYOUT ── */
+.main{padding:28px 32px;max-width:1400px;margin:0 auto;}
+.section{display:none;}
+.section.active{display:block;}
+
+/* ── TYPOGRAPHY ── */
+.page-header{margin-bottom:24px;}
+.page-header h1{font-size:22px;font-weight:800;}
+.page-header p{font-size:13px;color:var(--gray-500);margin-top:4px;}
+.slabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gray-400);margin-bottom:14px;}
+
+/* ── GRIDS ── */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px;}
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr);}.g3{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:700px){.g4,.g3,.g2{grid-template-columns:1fr;}}
+
+/* ── CARD ── */
+.card{background:#fff;border:var(--border);border-radius:var(--radius-lg);padding:22px 24px;box-shadow:var(--shadow-sm);}
+
+/* ── METRIC CARD ── */
+.mc{background:#fff;border:var(--border);border-radius:var(--radius-lg);padding:20px 22px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.mc.c-navy::before{background:var(--bold-navy);}
+.mc.c-red::before{background:var(--bold-red);}
+.mc.c-green::before{background:var(--bold-green);}
+.mc.c-gold::before{background:var(--bold-gold);}
+.mc.c-blue::before{background:var(--bold-blue);}
+.mc.c-purple::before{background:var(--bold-purple);}
+.mc-icon{width:36px;height:36px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:12px;}
+.ic-navy{background:var(--bold-navy-muted);}
+.ic-red{background:var(--bold-red-light);}
+.ic-green{background:var(--bold-green-light);}
+.ic-gold{background:var(--bold-gold-light);}
+.ic-blue{background:var(--bold-blue-light);}
+.ic-purple{background:var(--bold-purple-light);}
+.mc-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--gray-400);margin-bottom:6px;}
+.mc-value{font-size:28px;font-weight:800;line-height:1.1;}
+.mc-sub{font-size:12px;color:var(--gray-500);margin-top:4px;}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;}
+.b-red{background:var(--bold-red-light);color:var(--bold-red);}
+.b-gold{background:var(--bold-gold-light);color:#B07000;}
+.b-green{background:var(--bold-green-light);color:var(--bold-green);}
+.b-blue{background:var(--bold-blue-light);color:var(--bold-blue);}
+.b-navy{background:var(--bold-navy-muted);color:var(--bold-navy);}
+.b-purple{background:var(--bold-purple-light);color:var(--bold-purple);}
+.b-gray{background:var(--gray-100);color:var(--gray-500);}
+
+/* ── ALERT BANNER ── */
+.ab{border-radius:var(--radius-lg);padding:14px 18px;display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
+.ab.crit{background:var(--bold-red-light);border:1.5px solid #f5a9b8;}
+.ab.warn{background:var(--bold-gold-light);border:1.5px solid #fad999;}
+.ab.info{background:var(--bold-blue-light);border:1.5px solid #b3d4f5;}
+.ab.succ{background:var(--bold-green-light);border:1.5px solid #a8dfc0;}
+.ab-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.ab-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+.ab.crit .ab-title{color:var(--bold-red);}
+.ab.warn .ab-title{color:#B07000;}
+.ab.info .ab-title{color:var(--bold-blue);}
+.ab.succ .ab-title{color:var(--bold-green);}
+.ab-text{font-size:12px;color:var(--gray-600);}
+
+/* ── TABLE ── */
+.dt{width:100%;border-collapse:collapse;}
+.dt th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--gray-400);padding:10px 12px;text-align:left;border-bottom:1.5px solid var(--gray-200);}
+.dt td{font-size:13px;padding:11px 12px;border-bottom:1px solid var(--gray-100);vertical-align:middle;}
+.dt tr:last-child td{border-bottom:none;}
+.dt tr:hover td{background:var(--gray-50);}
+
+/* ── PROGRESS BAR ── */
+.pb-wrap{margin-bottom:12px;}
+.pb-header{display:flex;justify-content:space-between;margin-bottom:5px;}
+.pb-label{font-size:12px;font-weight:600;}
+.pb-val{font-size:12px;font-weight:700;color:var(--gray-500);}
+.pb{height:7px;background:var(--gray-100);border-radius:999px;overflow:hidden;}
+.pb-fill{height:100%;border-radius:999px;transition:width 1s ease;}
+
+/* ── SUMMARY STRIP ── */
+.strip{background:var(--bold-navy);color:#fff;border-radius:var(--radius-lg);padding:20px 28px;margin-bottom:24px;display:flex;align-items:center;flex-wrap:wrap;}
+.strip-item{text-align:center;flex:1;min-width:90px;padding:8px 12px;border-right:1px solid rgba(255,255,255,0.1);}
+.strip-item:last-child{border-right:none;}
+.strip-num{font-size:24px;font-weight:800;}
+.strip-label{font-size:10px;font-weight:600;opacity:0.6;margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;}
+
+/* ── PAIN CARD ── */
+.pain-card{background:#fff;border:var(--border);border-radius:var(--radius-lg);padding:18px 20px;}
+.pain-score{font-size:32px;font-weight:800;}
+.pain-bar-outer{height:6px;background:var(--gray-100);border-radius:999px;margin-top:8px;overflow:hidden;}
+.pain-bar-inner{height:100%;border-radius:999px;transition:width 1s ease;}
+
+/* ── LIST ROW ── */
+.lr{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gray-100);}
+.lr:last-child{border-bottom:none;}
+.lr-rank{width:24px;height:24px;border-radius:50%;background:var(--bold-navy-muted);color:var(--bold-navy);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.lr-main{flex:1;}
+.lr-title{font-size:13px;font-weight:600;}
+.lr-sub{font-size:11px;color:var(--gray-400);}
+.lr-val{font-size:14px;font-weight:800;}
+
+/* ── CHART ── */
+.ch{position:relative;height:220px;}
+.ch-tall{position:relative;height:280px;}
+
+/* ── ROADMAP ── */
+.rm-quarter{margin-bottom:28px;}
+.rm-qheader{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.rm-qpill{font-size:12px;font-weight:800;padding:5px 16px;border-radius:999px;color:#fff;}
+.rm-qline{flex:1;height:1.5px;background:var(--gray-200);}
+.rm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+@media(max-width:900px){.rm-grid{grid-template-columns:1fr;}}
+.rm-item{background:#fff;border:var(--border);border-radius:var(--radius-md);padding:16px;position:relative;overflow:hidden;}
+.rm-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;}
+.rm-item.must::before{background:var(--bold-red);}
+.rm-item.should::before{background:var(--bold-gold);}
+.rm-item.could::before{background:var(--bold-blue);}
+.rm-item.nice::before{background:var(--bold-green);}
+.rm-title{font-size:13px;font-weight:700;margin-bottom:6px;}
+.rm-desc{font-size:12px;color:var(--gray-500);line-height:1.5;margin-bottom:10px;}
+.rm-meta{display:flex;gap:6px;flex-wrap:wrap;}
+
+/* ── MATRIX ── */
+.mx{width:100%;border-collapse:collapse;}
+.mx th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--gray-400);padding:8px 10px;text-align:center;}
+.mx td{font-size:12px;padding:8px 10px;text-align:center;border-bottom:1px solid var(--gray-100);}
+.mx td:first-child{text-align:left;font-weight:600;}
+.dot-ok{display:inline-flex;width:22px;height:22px;background:var(--bold-green);border-radius:50%;color:#fff;font-size:11px;align-items:center;justify-content:center;}
+.dot-no{display:inline-flex;width:22px;height:22px;background:var(--bold-red-light);border-radius:50%;color:var(--bold-red);font-size:11px;align-items:center;justify-content:center;font-weight:800;}
+.dot-na{display:inline-flex;width:22px;height:22px;background:var(--gray-100);border-radius:50%;color:var(--gray-400);font-size:11px;align-items:center;justify-content:center;}
+
+.sx{overflow-x:auto;}
+.footer{text-align:center;font-size:11px;color:var(--gray-400);padding:32px;}
+
+/* ── AI INSIGHTS ── */
+.ai-resumen-card{background:var(--bold-navy);color:#fff;border-radius:var(--radius-lg);padding:24px 28px;margin-bottom:24px;}
+.ai-resumen-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;opacity:0.5;margin-bottom:10px;}
+.ai-resumen-text{font-size:15px;font-weight:600;line-height:1.7;}
+.ai-resumen-footer{font-size:11px;opacity:0.4;margin-top:12px;}
+.ai-skeleton{background:linear-gradient(90deg,var(--gray-100) 25%,var(--gray-50) 50%,var(--gray-100) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius-md);height:16px;margin-bottom:8px;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN SCREEN ═══════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <svg xmlns="http://www.w3.org/2000/svg" width="96" height="28" viewBox="0 0 96 28" fill="none">
+      <path d="M34.8998 18.1614H51.4505C51.0525 22.3658 47.4939 25.6666 43.1744 25.6666C38.855 25.6666 35.2971 22.3658 34.8991 18.1614H34.8998ZM23.0918 9.12923V25.6293C27.3069 25.2325 30.6189 21.6842 30.6189 17.3789C30.6189 13.0737 27.3069 9.52671 23.0918 9.12992V9.12923ZM43.1751 9.0919C38.8564 9.0919 35.2978 12.3941 34.8998 16.5985H51.4505C51.0525 12.3941 47.4939 9.0919 43.1744 9.0919H43.1751ZM14.7324 15.1143V25.6673H21.474V2.33398H14.7324V15.1143ZM74.8205 2.33398V25.6666H81.5621V2.33398H74.8205ZM65.724 17.3796C65.724 17.9036 65.7752 18.4151 65.8691 18.9122C66.5459 22.4999 69.5488 25.2802 73.2518 25.6286V9.12923C69.0367 9.52602 65.7247 13.0743 65.7247 17.3796H65.724ZM54.8598 25.6666H61.6014V2.33398H54.8598V25.6666Z" fill="url(#lg_login)"/>
+      <defs><linearGradient id="lg_login" x1="81.5621" y1="14" x2="14.7324" y2="14" gradientUnits="userSpaceOnUse"><stop offset="0.045" stop-color="#FF2947"/><stop offset="0.8" stop-color="#121E6C"/></linearGradient></defs>
+    </svg>
+    <div class="login-title">PM Intelligence Dashboard</div>
+    <div class="login-sub">Conecta tu cuenta Google para leer los datos<br>en vivo desde los Sheets de Bold POS.</div>
+    <button class="google-btn" onclick="startOAuth()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.174 0 7.548 0 9s.348 2.826.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
+      Continuar con Google
+    </button>
+    <div class="login-divider"></div>
+    <div class="login-note">Solo usuarios con acceso a los Google Sheets de Bold POS podrán ver los datos. La sesión se guarda en tu browser.</div>
+  </div>
+</div>
+
+<!-- ═══════════ LOADING OVERLAY ═══════════ -->
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <svg xmlns="http://www.w3.org/2000/svg" width="96" height="28" viewBox="0 0 96 28" fill="none" class="loading-logo">
+    <path d="M34.8998 18.1614H51.4505C51.0525 22.3658 47.4939 25.6666 43.1744 25.6666C38.855 25.6666 35.2971 22.3658 34.8991 18.1614H34.8998ZM23.0918 9.12923V25.6293C27.3069 25.2325 30.6189 21.6842 30.6189 17.3789C30.6189 13.0737 27.3069 9.52671 23.0918 9.12992V9.12923ZM43.1751 9.0919C38.8564 9.0919 35.2978 12.3941 34.8998 16.5985H51.4505C51.0525 12.3941 47.4939 9.0919 43.1744 9.0919H43.1751ZM14.7324 15.1143V25.6673H21.474V2.33398H14.7324V15.1143ZM74.8205 2.33398V25.6666H81.5621V2.33398H74.8205ZM65.724 17.3796C65.724 17.9036 65.7752 18.4151 65.8691 18.9122C66.5459 22.4999 69.5488 25.2802 73.2518 25.6286V9.12923C69.0367 9.52602 65.7247 13.0743 65.7247 17.3796H65.724ZM54.8598 25.6666H61.6014V2.33398H54.8598V25.6666Z" fill="url(#lg_loading)"/>
+    <defs><linearGradient id="lg_loading" x1="81.5621" y1="14" x2="14.7324" y2="14" gradientUnits="userSpaceOnUse"><stop offset="0.045" stop-color="#FF2947"/><stop offset="0.8" stop-color="#fff"/></linearGradient></defs>
+  </svg>
+  <div class="loading-text" id="loadingText">Cargando datos en vivo...</div>
+  <div class="loading-sub" id="loadingStatus">Conectando con Google Sheets</div>
+  <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
+</div>
+
+<!-- ═══════════ TOPBAR ═══════════ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="21" viewBox="0 0 96 28" fill="none">
+      <path d="M34.8998 18.1614H51.4505C51.0525 22.3658 47.4939 25.6666 43.1744 25.6666C38.855 25.6666 35.2971 22.3658 34.8991 18.1614H34.8998ZM23.0918 9.12923V25.6293C27.3069 25.2325 30.6189 21.6842 30.6189 17.3789C30.6189 13.0737 27.3069 9.52671 23.0918 9.12992V9.12923ZM43.1751 9.0919C38.8564 9.0919 35.2978 12.3941 34.8998 16.5985H51.4505C51.0525 12.3941 47.4939 9.0919 43.1744 9.0919H43.1751ZM14.7324 15.1143V25.6673H21.474V2.33398H14.7324V15.1143ZM74.8205 2.33398V25.6666H81.5621V2.33398H74.8205ZM65.724 17.3796C65.724 17.9036 65.7752 18.4151 65.8691 18.9122C66.5459 22.4999 69.5488 25.2802 73.2518 25.6286V9.12923C69.0367 9.52602 65.7247 13.0743 65.7247 17.3796H65.724ZM54.8598 25.6666H61.6014V2.33398H54.8598V25.6666Z" fill="url(#lg_top)"/>
+      <defs><linearGradient id="lg_top" x1="81.5621" y1="14" x2="14.7324" y2="14" gradientUnits="userSpaceOnUse"><stop offset="0.045" stop-color="#FF2947"/><stop offset="0.8" stop-color="#121E6C"/></linearGradient></defs>
+    </svg>
+    <span class="topbar-badge">PM INTELLIGENCE</span>
+    <span class="live-dot" id="liveDot">● LIVE</span>
+  </div>
+  <div class="topbar-right">
+    <span style="font-size:11px;color:var(--gray-400);" id="lastUpdated"></span>
+    <div class="user-chip">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <span id="userName" style="font-size:12px;"></span>
+    </div>
+    <button class="btn-sm btn-refresh" id="refreshBtn" onclick="loadAllData()">⟳ Refresh</button>
+    <button class="btn-sm btn-logout" onclick="logout()">Salir</button>
+  </div>
+</div>
+
+<!-- ═══════════ NAV TABS ═══════════ -->
+<div class="nav-tabs">
+  <div class="nav-tab active"  onclick="showTab('overview',this)">📊 Overview</div>
+  <div class="nav-tab" onclick="showTab('backlog',this)">📋 Backlog</div>
+  <div class="nav-tab" onclick="showTab('tickets',this)">🎫 Soporte</div>
+  <div class="nav-tab" onclick="showTab('correlation',this)">🔗 Correlación & Pain</div>
+  <div class="nav-tab" onclick="showTab('gaps',this)">⚠️ Gaps & Riesgos</div>
+  <div class="nav-tab" onclick="showTab('roadmap',this)">🗺️ Roadmap</div>
+  <div class="nav-tab" onclick="showTab('ai',this)">🤖 AI Insights</div>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="main">
+
+  <!-- ERROR BANNER -->
+  <div id="errorBanner" class="ab crit" style="display:none;">
+    <div class="ab-icon">⚠️</div>
+    <div><div class="ab-title" id="errorTitle">Error al cargar datos</div><div class="ab-text" id="errorDetail"></div></div>
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <div class="section active" id="section-overview">
+    <div class="page-header"><h1>Overview Ejecutivo</h1><p id="overviewSub">Cargando...</p></div>
+    <div id="alertsBox"></div>
+    <div class="strip" id="strip"></div>
+    <div class="g4" id="overviewMetrics"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="slabel">Estado del backlog</div>
+        <div style="display:flex;gap:20px;align-items:center;">
+          <div style="width:170px;height:170px;flex-shrink:0;"><canvas id="donutBacklog"></canvas></div>
+          <div id="donutLegend" style="flex:1;display:flex;flex-direction:column;gap:8px;font-size:12px;"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="slabel">Tipos de tickets</div>
+        <div class="ch"><canvas id="barTicketTypes"></canvas></div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="slabel">Módulos más demandados</div>
+        <div id="modulesList"></div>
+      </div>
+      <div class="card">
+        <div class="slabel">Volumen de tickets por mes</div>
+        <div class="ch"><canvas id="lineTickets"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BACKLOG ── -->
+  <div class="section" id="section-backlog">
+    <div class="page-header"><h1>Análisis del Backlog</h1><p id="backlogSub">Cargando...</p></div>
+    <div class="g4" id="backlogMetrics"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="slabel">Top items por RICE Score</div>
+        <div class="sx"><table class="dt" id="riceTable"><thead><tr><th>#</th><th>Request</th><th>Estado</th><th>Reqs</th><th>RICE</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="slabel">Items por módulo</div>
+        <div class="ch-tall"><canvas id="barModules"></canvas></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:24px;">
+      <div class="slabel">Top por demanda (No. Requests)</div>
+      <div class="sx"><table class="dt" id="demandTable"><thead><tr><th>#</th><th>Módulo</th><th>Request</th><th>Estado</th><th>Requests</th><th>Churn</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- ── TICKETS ── -->
+  <div class="section" id="section-tickets">
+    <div class="page-header"><h1>Tickets de Soporte</h1><p id="ticketsSub">Cargando...</p></div>
+    <div class="g4" id="ticketMetrics"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="slabel">Bugs vs Ayuda FE por mes</div>
+        <div class="ch"><canvas id="lineBugs"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="slabel">Tickets por plataforma</div>
+        <div class="ch"><canvas id="barPlatform"></canvas></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:24px;">
+      <div class="slabel">Topics detectados en descripciones</div>
+      <div id="topicsGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;"></div>
+    </div>
+    <div class="card">
+      <div class="slabel">Tickets recientes</div>
+      <div class="sx"><table class="dt" id="recentTable"><thead><tr><th>Comercio</th><th>Descripción</th><th>Plataforma</th><th>Tipo</th><th>Mes</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- ── CORRELACIÓN ── -->
+  <div class="section" id="section-correlation">
+    <div class="page-header"><h1>Correlación & Pain Score</h1><p>Análisis cruzado entre backlog y tickets — detecta módulos con dolor doble</p></div>
+    <div class="ab info" style="margin-bottom:20px;">
+      <div class="ab-icon">🔗</div>
+      <div><div class="ab-title">Metodología del Pain Score</div>
+      <div class="ab-text"><strong>Pain Score = (Demanda backlog × 50%) + (Tickets soporte × 40%) + (Bonus churn × 10%)</strong> — Un módulo con muchos requests Y muchos tickets tiene dolor doble. Es tu prioridad real, más allá del RICE Score aislado.</div></div>
+    </div>
+    <div class="slabel">Pain Score por módulo</div>
+    <div class="g3" id="painCards" style="margin-bottom:24px;"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="slabel">Mapa demanda vs tickets (burbuja = Pain Score)</div>
+        <div class="ch-tall"><canvas id="bubbleChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="slabel">Comercios en ambos archivos (riesgo activo)</div>
+        <div id="sharedCommerces"></div>
+        <div style="font-size:11px;color:var(--gray-400);margin-top:10px;">Comercios con features pendientes Y tickets activos = doble riesgo de churn.</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:24px;">
+      <div class="slabel">Features del backlog con tickets relacionados (correlación por keywords)</div>
+      <div class="sx"><table class="dt" id="corrTable"><thead><tr><th>Feature</th><th>Módulo</th><th>Requests</th><th>Tickets relacionados</th><th>Pain</th><th>Prioridad</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="slabel">✅ Oportunidades limpias (alta demanda, bajos tickets)</div>
+        <div id="cleanOpps"></div>
+      </div>
+      <div class="card">
+        <div class="slabel">🚨 Deuda doble (muchos requests + muchos tickets)</div>
+        <div id="doubleDebt"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GAPS ── -->
+  <div class="section" id="section-gaps">
+    <div class="page-header"><h1>Gaps & Riesgos</h1><p>Funcionalidades ausentes, churn documentado y paridad de plataformas</p></div>
+    <div id="churnContainer"></div>
+    <div class="card" style="margin-bottom:24px;">
+      <div class="slabel">Matrix de paridad de plataformas</div>
+      <div class="sx">
+        <table class="mx">
+          <thead><tr><th style="text-align:left;width:260px;">Funcionalidad</th><th>Web</th><th>App Móvil</th><th>Tablet</th><th>Impacto</th></tr></thead>
+          <tbody>
+            <tr><td>Órdenes / Tabs</td><td><span class="dot-ok">✓</span></td><td><span class="dot-no">✗</span></td><td><span class="dot-no">✗</span></td><td><span class="badge b-red">Crítico</span></td></tr>
+            <tr><td>Ajustes masivos inventario (Excel)</td><td><span class="dot-ok">✓</span></td><td><span class="dot-no">✗</span></td><td><span class="dot-no">✗</span></td><td><span class="badge b-red">Crítico</span></td></tr>
+            <tr><td>Traslado inventario entre sucursales</td><td><span class="dot-ok">✓</span></td><td><span class="dot-no">✗</span></td><td><span class="dot-no">✗</span></td><td><span class="badge b-red">Crítico</span></td></tr>
+            <tr><td>Estado de cuenta por cliente</td><td><span class="dot-ok">✓</span></td><td><span class="dot-no">✗</span></td><td><span class="dot-no">✗</span></td><td><span class="badge b-gold">Alto</span></td></tr>
+            <tr><td>Exportación Excel de reportes</td><td><span class="dot-ok">✓</span></td><td><span class="dot-na">—</span></td><td><span class="dot-na">—</span></td><td><span class="badge b-gold">Alto</span></td></tr>
+            <tr><td>Impresión de Turnos</td><td><span class="dot-ok">✓</span></td><td><span class="dot-no">✗</span></td><td><span class="dot-no">✗</span></td><td><span class="badge b-gold">Alto</span></td></tr>
+            <tr><td>Perfil de empresa (Ajustes)</td><td><span class="dot-ok">✓</span></td><td><span class="dot-no">✗</span></td><td><span class="dot-no">✗</span></td><td><span class="badge b-gold">Alto</span></td></tr>
+            <tr><td>Vender item no registrado</td><td><span class="dot-ok">✓</span></td><td><span class="dot-no">✗</span></td><td><span class="dot-na">—</span></td><td><span class="badge b-blue">Medio</span></td></tr>
+            <tr><td>Notas Crédito / Débito</td><td><span class="dot-ok">✓</span></td><td><span class="dot-na">—</span></td><td><span class="dot-na">—</span></td><td><span class="badge b-blue">Medio</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="slabel">Top items pendientes con mayor demanda</div>
+    <div class="g3" id="missingMods"></div>
+  </div>
+
+  <!-- ── ROADMAP ── -->
+  <div class="section" id="section-roadmap">
+    <div class="page-header"><h1>Roadmap — Próximos 12 meses</h1><p id="roadmapSub">Generado automáticamente desde backlog en vivo</p></div>
+    <div class="ab info" style="margin-bottom:20px;">
+      <div class="ab-icon">🗺️</div>
+      <div><div class="ab-title">Cómo se genera este roadmap</div>
+      <div class="ab-text">Priorización automática: <strong>Pain Score</strong> (backlog + tickets) + <strong>RICE Score</strong> + <strong>No. Requests</strong> + <strong>Riesgo churn</strong> en notas + <strong>keywords regulatorios</strong> (DIAN, retenciones). Cada vez que llegan nuevos requests o tickets, el roadmap se recalcula. Para overrides manuales, agrega columnas <code>Quarter</code> y <code>Priority</code> en tu Sheet de Backlog.</div></div>
+    </div>
+    <div style="display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;border-radius:2px;background:var(--bold-red);"></div>Must Have</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;border-radius:2px;background:var(--bold-gold);"></div>Should Have</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;border-radius:2px;background:var(--bold-blue);"></div>Could Have</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;border-radius:2px;background:var(--bold-green);"></div>Nice to Have</div>
+    </div>
+    <div id="roadmapBody"></div>
+  </div>
+
+
+  <!-- ── AI INSIGHTS ── -->
+  <div class="section" id="section-ai">
+    <div class="page-header">
+      <h1>🤖 AI Insights</h1>
+      <p id="aiSubtitle">Análisis generado por Claude en tiempo real sobre tus datos actuales de backlog y tickets</p>
+    </div>
+    <div id="aiLoading" style="display:none;">
+      <div class="ab info"><div class="ab-icon">🤖</div><div><div class="ab-title">Claude está analizando tus datos...</div><div class="ab-text">Cruzando backlog + tickets y generando insights estratégicos. Esto toma ~5–10 segundos.</div></div></div>
+      <div style="padding:24px;background:#fff;border:var(--border);border-radius:var(--radius-lg);margin-bottom:16px;">
+        <div class="ai-skeleton" style="width:80%;"></div>
+        <div class="ai-skeleton" style="width:60%;"></div>
+        <div class="ai-skeleton" style="width:70%;"></div>
+      </div>
+    </div>
+    <div id="aiError" style="display:none;">
+      <div class="ab crit"><div class="ab-icon">⚠️</div><div><div class="ab-title">Error al generar AI Insights</div><div class="ab-text" id="aiErrorText"></div></div></div>
+    </div>
+    <div id="aiResumen" style="display:none;">
+      <div class="ai-resumen-card">
+        <div class="ai-resumen-label">Resumen ejecutivo — Generado por Claude</div>
+        <div class="ai-resumen-text" id="aiResumenText"></div>
+        <div class="ai-resumen-footer" id="aiTimestamp"></div>
+      </div>
+    </div>
+    <div class="g2">
+      <div>
+        <div class="slabel">Alertas críticas detectadas por AI</div>
+        <div id="aiAlertas"></div>
+      </div>
+      <div>
+        <div class="slabel">Oportunidades no vistas</div>
+        <div id="aiOportunidades"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:24px;">
+      <div class="slabel">Insights de correlación — Patrones cruzados backlog + tickets</div>
+      <div id="aiInsights" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;"></div>
+    </div>
+    <div class="card">
+      <div class="slabel">Recomendaciones de roadmap con justificación de Claude</div>
+      <div class="sx">
+        <table class="dt" id="aiRoadmapTable">
+          <thead><tr><th>#</th><th>Feature</th><th>Trimestre</th><th>Justificación de Claude</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="footer">Bold POS PM Intelligence Dashboard v4 · Datos en vivo desde Google Sheets · AI Insights por Claude · Auto-refresh cada 15 min</div>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════ -->
+<script>
+// ─────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────
+const CLIENT_ID   = '250119545571-4vdtoe4l23e6b7j4tcs2qc5cj27fp962.apps.googleusercontent.com';
+const SCOPES      = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+const SHEET_BACKLOG = { id:'1nKXjdC7C1WhGwP62kLv1f_mY9hLP1hjeD6xb0Utdxns', tab:'Backlog_Features' };
+const SHEET_TICKETS = { id:'1elScP6QOFqt6w0MtfSZ1uuNSMSkIkXLtqEThcmrZOCA', tab:'Respuestas del formulario' };
+const REFRESH_MS  = 800 * 60 * 1000;
+const AI_ENDPOINT   = '/api/ai-insights'; // Vercel serverless function
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+const S = { token:null, user:null, backlog:[], tickets:[], charts:{} };
+
+// ─────────────────────────────────────────────
+// OAUTH — Google Identity Services (token model)
+// ─────────────────────────────────────────────
+let tokenClient;
+
+window.addEventListener('load', () => {
+  // Restore session
+  const saved = sessionStorage.getItem('bold_token');
+  if (saved) {
+    S.token = saved;
+    S.user  = JSON.parse(sessionStorage.getItem('bold_user') || '{}');
+    showApp();
+    loadAllData();
+  }
+  // Init GIS token client
+  const initGIS = () => {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: (resp) => {
+        if (resp.error) { showError('OAuth error: ' + resp.error); return; }
+        S.token = resp.access_token;
+        sessionStorage.setItem('bold_token', S.token);
+        fetchUserInfo();
+      }
+    });
+  };
+  if (window.google?.accounts?.oauth2) initGIS();
+  else document.querySelector('script[src*="gsi"]').addEventListener('load', initGIS);
+});
+
+function startOAuth() {
+  if (!tokenClient) { alert('Google Identity Services aún cargando, intenta en 2 segundos.'); return; }
+  tokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+async function fetchUserInfo() {
+  try {
+    const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: 'Bearer ' + S.token }
+    });
+    S.user = await r.json();
+    sessionStorage.setItem('bold_user', JSON.stringify(S.user));
+  } catch(e) { S.user = { name:'Usuario', email:'' }; }
+  showApp();
+  loadAllData();
+}
+
+function showApp() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  if (S.user?.name) {
+    document.getElementById('userName').textContent = S.user.name.split(' ')[0];
+    document.getElementById('userAvatar').textContent = (S.user.name||'U')[0].toUpperCase();
+  }
+}
+
+function logout() {
+  sessionStorage.clear();
+  if (S.token && window.google?.accounts?.oauth2) {
+    google.accounts.oauth2.revoke(S.token);
+  }
+  S.token = null;
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+// ─────────────────────────────────────────────
+// SHEETS API v4 FETCH
+// ─────────────────────────────────────────────
+async function fetchSheet(sheetId, tabName) {
+  const range = encodeURIComponent(tabName);
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?majorDimension=ROWS`;
+  const res = await fetch(url, { headers: { Authorization: 'Bearer ' + S.token } });
+  if (res.status === 401) throw new Error('TOKEN_EXPIRED');
+  if (!res.ok) throw new Error(`Sheets API: HTTP ${res.status}`);
+  const data = await res.json();
+  const rows = data.values || [];
+  if (rows.length < 2) return [];
+  const headers = rows[0];
+  return rows.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = row[i] ?? ''; });
+    return obj;
+  });
+}
+
+// ─────────────────────────────────────────────
+// COLUMN NORMALIZERS
+// ─────────────────────────────────────────────
+function get(obj, ...keys) {
+  for (const k of keys) {
+    const found = Object.keys(obj).find(ok => ok.toLowerCase().replace(/[^a-z0-9]/g,'').includes(k.toLowerCase().replace(/[^a-z0-9]/g,'')));
+    if (found && obj[found] !== '' && obj[found] !== undefined) return obj[found];
+  }
+  return '';
+}
+
+function mapBacklog(r) {
+  return {
+    module:      get(r,'module','módulo','modulo') || 'Sin módulo',
+    request:     get(r,'request','idea','solicitud','descripción','descripcion'),
+    names:       get(r,'nombre solicitante','nombresolicitante','nombres'),
+    status:      get(r,'status','estado'),
+    noRequests:  parseFloat(get(r,'no. requests','requests','norequest','no_request')) || 0,
+    riceScore:   parseFloat(get(r,'rice score','rice','ricescore')) || 0,
+    type:        get(r,'type','tipo'),
+    notes:       get(r,'notas','notes'),
+  };
+}
+
+function mapTicket(r) {
+  return {
+    commerce:    get(r,'nombre comercio','comercio','nombre'),
+    description: get(r,'descripción','descripcion','problema','description'),
+    platform:    get(r,'plataforma','platform'),
+    type:        get(r,'tipo','type'),
+    month:       get(r,'mes','month','creado en mes','creadoenmes'),
+    timestamp:   get(r,'timestamp','marca de tiempo','fecha'),
+  };
+}
+
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
+const STATUS_NORM = s => {
+  const t = (s||'').toLowerCase();
+  if (t.includes('desarrollo')) return 'En Desarrollo';
+  if (t.includes('análisis')||t.includes('analisis')) return 'En Análisis';
+  if (t.includes('backlog')) return 'En Backlog';
+  if (t.includes('rechaz')) return 'Rechazado';
+  return 'Pendiente';
+};
+
+const TICKET_TYPE = s => {
+  const t = (s||'').toLowerCase();
+  if (t.includes('bug')||t.includes('error')) return 'Bug/Error';
+  if (t.includes('fe')||t.includes('factura')) return 'Ayuda FE';
+  if (t.includes('duda')||t.includes('consulta')) return 'Duda/Consulta';
+  if (t.includes('ayuda')) return 'Ayuda General';
+  return 'Otro';
+};
+
+const IS_CHURN = notes => {
+  const t = (notes||'').toLowerCase();
+  return t.includes('devoluc') || t.includes('pierde') || t.includes('cancela') || t.includes('no toma') || t.includes('no pudo');
+};
+
+const MODULE_KW = {
+  'FE / Facturación Electrónica': ['factura electrónica','factura electronica','dian','resolución','resolucion','cufe','habilitac','nota credito'],
+  'Inventarios': ['inventario','item','items','stock','producto','bodega','combo','ingrediente'],
+  'Ventas/Comprobantes': ['venta','comprobante','cobro','precio','descuento','propina','vender'],
+  'Reportería': ['reporte','dashboard','turno','cxc','cuentas por cobrar','ganancias','utilidad'],
+  'Usuarios/Permisos': ['usuario','user','rol','permiso','login','acceso'],
+  'Configuración': ['configurac','setup','set ','habilitacion','numerac'],
+  'Compras/Proveedores': ['proveedor','compra','proveedores'],
+  'Integraciones': ['shopify','woocommerce','integrac','ecommerce','báscula','bascula'],
+};
+
+const DETECT_MODULE = text => {
+  const t = (text||'').toLowerCase();
+  for (const [mod, kws] of Object.entries(MODULE_KW)) {
+    if (kws.some(k => t.includes(k))) return mod;
+  }
+  return 'Otro';
+};
+
+const MONTH_LABEL = m => {
+  if (!m) return '';
+  const [y, mo] = String(m).substring(0,7).split('-');
+  const names = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return (names[parseInt(mo)] || mo) + ' ' + (y||'').slice(2);
+};
+
+const TRUNC = (s, n=70) => String(s||'').length > n ? String(s).substring(0,n) + '…' : String(s||'');
+
+const STATUS_BADGE = s => {
+  const n = STATUS_NORM(s);
+  const m = {'En Desarrollo':'b-green','En Análisis':'b-blue','En Backlog':'b-gold','Rechazado':'b-red','Pendiente':'b-gray'};
+  return `<span class="badge ${m[n]||'b-gray'}">${n}</span>`;
+};
+
+const FONT = { family:"'Montserrat'" };
+const GRID_CLR = '#E9ECF4';
+const TICK_CLR = '#8A92A6';
+
+function mkChart(id, cfg) {
+  if (S.charts[id]) { S.charts[id].destroy(); delete S.charts[id]; }
+  const el = document.getElementById(id);
+  if (el) S.charts[id] = new Chart(el, cfg);
+}
+
+// ─────────────────────────────────────────────
+// PAIN SCORE ENGINE
+// ─────────────────────────────────────────────
+function computePainScores() {
+  const tkModCounts = {};
+  S.tickets.forEach(t => {
+    const m = DETECT_MODULE(t.description);
+    tkModCounts[m] = (tkModCounts[m]||0) + 1;
+  });
+
+  const blModDemand = {};
+  const blModChurn  = {};
+  S.backlog.forEach(r => {
+    blModDemand[r.module] = (blModDemand[r.module]||0) + (r.noRequests||1);
+    if (IS_CHURN(r.notes)) blModChurn[r.module] = (blModChurn[r.module]||0) + 1;
+  });
+
+  const maxD = Math.max(...Object.values(blModDemand), 1);
+  const maxT = Math.max(...Object.values(tkModCounts), 1);
+
+  const mods = [...new Set([...Object.keys(blModDemand), ...Object.keys(tkModCounts)])];
+  return mods.map(mod => ({
+    mod,
+    demand:  blModDemand[mod] || 0,
+    tickets: tkModCounts[mod] || 0,
+    churn:   blModChurn[mod]  || 0,
+    score:   Math.round((blModDemand[mod]||0)/maxD*50 + (tkModCounts[mod]||0)/maxT*40 + Math.min((blModChurn[mod]||0)*5,10)),
+  })).filter(d => d.demand > 0 || d.tickets > 0).sort((a,b) => b.score - a.score);
+}
+
+function getPain(mod, painScores) {
+  return (painScores.find(p => p.mod === mod) || {score:0}).score;
+}
+
+// ─────────────────────────────────────────────
+// RENDER — OVERVIEW
+// ─────────────────────────────────────────────
+function renderOverview() {
+  const bl = S.backlog, tk = S.tickets;
+  const totalReqs  = bl.reduce((s,r) => s + r.noRequests, 0);
+  const bugs       = tk.filter(t => TICKET_TYPE(t.type) === 'Bug/Error').length;
+  const inDev      = bl.filter(r => STATUS_NORM(r.status) === 'En Desarrollo').length;
+  const pending    = bl.filter(r => STATUS_NORM(r.status) === 'Pendiente').length;
+  const churnCount = bl.filter(r => IS_CHURN(r.notes)).length;
+  const bugPct     = tk.length ? Math.round(bugs/tk.length*100) : 0;
+
+  document.getElementById('overviewSub').textContent =
+    `${bl.length} items en backlog · ${Math.round(totalReqs)} requests · ${tk.length} tickets · Actualizado ${new Date().toLocaleString('es-CO')}`;
+
+  // Alerts
+  const alerts = [];
+  if (bugPct > 30) alerts.push({t:'crit',i:'🚨',title:`${bugPct}% de tickets son bugs (${bugs}/${tk.length})`,text:'Deuda de calidad activa consumiendo capacidad de soporte.'});
+  if (pending/bl.length > 0.8) alerts.push({t:'warn',i:'⚡',title:`${Math.round(pending/bl.length*100)}% del backlog sin ejecutar`,text:`Solo ${inDev} items en desarrollo activo de ${bl.length} totales.`});
+  if (churnCount > 0) alerts.push({t:'crit',i:'🏪',title:`${churnCount} features con riesgo de churn documentado`,text:'Comercios que pidieron devolución o no tomaron el producto por estas features.'});
+  document.getElementById('alertsBox').innerHTML = alerts.map(a =>
+    `<div class="ab ${a.t}"><div class="ab-icon">${a.i}</div><div><div class="ab-title">${a.title}</div><div class="ab-text">${a.text}</div></div></div>`
+  ).join('');
+
+  // Strip
+  document.getElementById('strip').innerHTML = [
+    [bl.length,'Backlog items'], [Math.round(totalReqs),'Requests total'], [tk.length,'Tickets'],
+    [bugPct+'%','Son bugs'], [inDev,'En Desarrollo'], [churnCount,'Riesgo churn'], [Math.round(pending/bl.length*100)+'%','Sin ejecutar']
+  ].map(([n,l]) => `<div class="strip-item"><div class="strip-num">${n}</div><div class="strip-label">${l}</div></div>`).join('');
+
+  // Metrics
+  const topMod = Object.entries(bl.reduce((a,r)=>{a[r.module]=(a[r.module]||0)+1;return a;},{})).sort((a,b)=>b[1]-a[1])[0];
+  const topRice = [...bl].filter(r=>r.riceScore>0).sort((a,b)=>b.riceScore-a.riceScore)[0];
+  document.getElementById('overviewMetrics').innerHTML = `
+    <div class="mc c-red"><div class="mc-icon ic-red">🐛</div><div class="mc-label">Bugs activos</div><div class="mc-value">${bugs}</div><div class="mc-sub">De ${tk.length} tickets</div></div>
+    <div class="mc c-gold"><div class="mc-icon ic-gold">📋</div><div class="mc-label">Módulo + demandado</div><div class="mc-value">${topMod?topMod[1]:'—'}</div><div class="mc-sub">${topMod?topMod[0]:''}</div></div>
+    <div class="mc c-navy"><div class="mc-icon ic-navy">⚙️</div><div class="mc-label">RICE Score máx.</div><div class="mc-value">${topRice?topRice.riceScore.toFixed(1):'—'}</div><div class="mc-sub">${topRice?TRUNC(topRice.module,22):''}</div></div>
+    <div class="mc c-red"><div class="mc-icon ic-red">⚠️</div><div class="mc-label">Riesgo churn</div><div class="mc-value">${churnCount}</div><div class="mc-sub">Features con mención churn</div></div>
+  `;
+
+  // Donut backlog status
+  const SC = {'Pendiente':'#8A92A6','En Backlog':'#F5A623','En Análisis':'#4A90D9','En Desarrollo':'#27AE60','Rechazado':'#E83A5A'};
+  const statusCounts = bl.reduce((a,r)=>{ const s=STATUS_NORM(r.status); a[s]=(a[s]||0)+1; return a; },{});
+  const sKeys = Object.keys(statusCounts);
+  mkChart('donutBacklog',{type:'doughnut',data:{labels:sKeys,datasets:[{data:sKeys.map(s=>statusCounts[s]),backgroundColor:sKeys.map(s=>SC[s]||'#ccc'),borderWidth:0}]},options:{cutout:'68%',plugins:{legend:{display:false}},responsive:true,maintainAspectRatio:true}});
+  document.getElementById('donutLegend').innerHTML = sKeys.map(s =>
+    `<div style="display:flex;align-items:center;gap:7px;"><div style="width:10px;height:10px;border-radius:50%;background:${SC[s]};flex-shrink:0;"></div><div style="flex:1;">${s}</div><strong>${statusCounts[s]} (${Math.round(statusCounts[s]/bl.length*100)}%)</strong></div>`
+  ).join('');
+
+  // Bar ticket types
+  const TC = {'Bug/Error':'#E83A5A','Ayuda FE':'#F5A623','Duda/Consulta':'#4A90D9','Ayuda General':'#27AE60','Otro':'#B0B9CE'};
+  const typeCounts = tk.reduce((a,t)=>{ const tp=TICKET_TYPE(t.type); a[tp]=(a[tp]||0)+1; return a;},{});
+  const tKeys = Object.keys(typeCounts).sort((a,b)=>typeCounts[b]-typeCounts[a]);
+  mkChart('barTicketTypes',{type:'bar',data:{labels:tKeys,datasets:[{data:tKeys.map(k=>typeCounts[k]),backgroundColor:tKeys.map(k=>TC[k]||'#ccc'),borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10,family:"'Montserrat'"},color:TICK_CLR}},y:{grid:{color:GRID_CLR},border:{display:false},ticks:{font:{size:10,family:"'Montserrat'"},color:TICK_CLR}}}}});
+
+  // Module list
+  const modCounts = bl.reduce((a,r)=>{ a[r.module]=(a[r.module]||0)+1; return a;},{});
+  const topMods = Object.entries(modCounts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  document.getElementById('modulesList').innerHTML = topMods.map(([m,c],i)=>
+    `<div class="lr"><div class="lr-rank">${i+1}</div><div class="lr-main"><div class="lr-title">${m}</div></div><div class="lr-val">${c}</div></div>`
+  ).join('');
+
+  // Line tickets by month
+  const monthCounts = {};
+  tk.forEach(t => {
+    const m = t.month ? String(t.month).substring(0,7) :
+      (t.timestamp ? new Date(parseFloat(t.timestamp)*(String(t.timestamp).length>10?1:1000)).toISOString().substring(0,7) : '');
+    if (m && m.match(/^\d{4}-\d{2}$/)) monthCounts[m] = (monthCounts[m]||0)+1;
+  });
+  const mKeys = Object.keys(monthCounts).sort().slice(-8);
+  mkChart('lineTickets',{type:'line',data:{labels:mKeys.map(MONTH_LABEL),datasets:[{data:mKeys.map(m=>monthCounts[m]),borderColor:'#1B2A5C',backgroundColor:'rgba(27,42,92,0.08)',pointBackgroundColor:'#1B2A5C',pointRadius:4,tension:0.3,borderWidth:2,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10,family:"'Montserrat'"},color:TICK_CLR}},y:{grid:{color:GRID_CLR},border:{display:false},ticks:{font:{size:10,family:"'Montserrat'"},color:TICK_CLR}}}}});
+}
+
+// ─────────────────────────────────────────────
+// RENDER — BACKLOG
+// ─────────────────────────────────────────────
+function renderBacklog() {
+  const bl = S.backlog;
+  const totalReqs = bl.reduce((s,r)=>s+r.noRequests,0);
+  const withRice  = bl.filter(r=>r.riceScore>0).length;
+  const features  = bl.filter(r=>(r.type||'').toLowerCase().includes('feature')).length;
+  const churn     = bl.filter(r=>IS_CHURN(r.notes)).length;
+
+  document.getElementById('backlogSub').textContent = `${bl.length} items · ${Math.round(totalReqs)} requests · ${withRice} con RICE Score · ${bl.length-withRice} sin RICE (${Math.round((bl.length-withRice)/bl.length*100)}%)`;
+
+  document.getElementById('backlogMetrics').innerHTML = `
+    <div class="mc c-green"><div class="mc-icon ic-green">📊</div><div class="mc-label">Total requests</div><div class="mc-value">${Math.round(totalReqs)}</div><div class="mc-sub">Demanda acumulada</div></div>
+    <div class="mc c-red"><div class="mc-icon ic-red">🏷️</div><div class="mc-label">Features vs Optim.</div><div class="mc-value">${Math.round(features/bl.length*100)}%</div><div class="mc-sub">${features} features · ${bl.length-features} optim.</div></div>
+    <div class="mc c-gold"><div class="mc-icon ic-gold">⚡</div><div class="mc-label">Sin RICE Score</div><div class="mc-value">${bl.length-withRice}</div><div class="mc-sub">${Math.round((bl.length-withRice)/bl.length*100)}% del backlog</div></div>
+    <div class="mc c-red"><div class="mc-icon ic-red">🚨</div><div class="mc-label">Riesgo churn</div><div class="mc-value">${churn}</div><div class="mc-sub">Menciones en notas</div></div>
+  `;
+
+  // RICE table
+  const riceItems = [...bl].filter(r=>r.riceScore>0).sort((a,b)=>b.riceScore-a.riceScore).slice(0,12);
+  document.querySelector('#riceTable tbody').innerHTML = riceItems.map((r,i)=>
+    `<tr><td>${i+1}</td><td style="font-weight:600;max-width:200px;font-size:12px;">${TRUNC(r.request,75)}</td><td>${STATUS_BADGE(r.status)}</td><td>${r.noRequests}</td><td style="font-weight:800;color:var(--bold-green);">${r.riceScore.toFixed(2)}</td></tr>`
+  ).join('');
+
+  // Demand table
+  const top20 = [...bl].filter(r=>r.noRequests>0).sort((a,b)=>b.noRequests-a.noRequests).slice(0,20);
+  document.querySelector('#demandTable tbody').innerHTML = top20.map((r,i)=>
+    `<tr><td>${i+1}</td><td><span class="badge b-navy" style="font-size:10px;">${TRUNC(r.module,22)}</span></td><td style="font-size:12px;max-width:240px;">${TRUNC(r.request,80)}</td><td>${STATUS_BADGE(r.status)}</td><td><strong>${r.noRequests}</strong></td><td>${IS_CHURN(r.notes)?'<span class="badge b-red">⚠️</span>':''}</td></tr>`
+  ).join('');
+
+  // Bar modules
+  const modCounts = bl.reduce((a,r)=>{ a[r.module]=(a[r.module]||0)+1; return a;},{});
+  const topMods = Object.entries(modCounts).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  mkChart('barModules',{type:'bar',data:{labels:topMods.map(([m])=>m),datasets:[{data:topMods.map(([,c])=>c),backgroundColor:'#1B2A5C',borderRadius:5,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:GRID_CLR},border:{display:false},ticks:{font:{size:10,family:"'Montserrat'"},color:TICK_CLR}},y:{grid:{display:false},ticks:{font:{size:10,family:"'Montserrat'"},color:'#636B7D'}}}}});
+}
+
+// ─────────────────────────────────────────────
+// RENDER — TICKETS
+// ─────────────────────────────────────────────
+function renderTickets() {
+  const tk = S.tickets;
+  const bugs = tk.filter(t=>TICKET_TYPE(t.type)==='Bug/Error').length;
+  const fe   = tk.filter(t=>TICKET_TYPE(t.type)==='Ayuda FE').length;
+  const web  = tk.filter(t=>(t.platform||'').toLowerCase().includes('web')).length;
+
+  document.getElementById('ticketsSub').textContent = `${tk.length} tickets cargados · ${bugs} bugs (${Math.round(bugs/tk.length*100)}%) · ${fe} de FE`;
+
+  document.getElementById('ticketMetrics').innerHTML = `
+    <div class="mc c-red"><div class="mc-icon ic-red">🐛</div><div class="mc-label">Bugs/Errores</div><div class="mc-value">${bugs}</div><div class="mc-sub">${Math.round(bugs/tk.length*100)}% del total</div></div>
+    <div class="mc c-gold"><div class="mc-icon ic-gold">🧾</div><div class="mc-label">Ayuda en FE</div><div class="mc-value">${fe}</div><div class="mc-sub">${Math.round(fe/tk.length*100)}% — Facturación Electrónica</div></div>
+    <div class="mc c-blue"><div class="mc-icon ic-blue">🌐</div><div class="mc-label">Desde Web</div><div class="mc-value">${Math.round(web/tk.length*100)}%</div><div class="mc-sub">${web} de ${tk.length} tickets</div></div>
+    <div class="mc c-navy"><div class="mc-icon ic-navy">📅</div><div class="mc-label">Total tickets</div><div class="mc-value">${tk.length}</div><div class="mc-sub">Histórico completo</div></div>
+  `;
+
+  // Line bugs + FE by month
+  const bugMon={}, feMon={};
+  tk.forEach(t => {
+    const m = t.month ? String(t.month).substring(0,7) :
+      (t.timestamp ? new Date(parseFloat(t.timestamp)*(String(t.timestamp).length>10?1:1000)).toISOString().substring(0,7) : '');
+    if (!m||!m.match(/^\d{4}-\d{2}$/)) return;
+    if (TICKET_TYPE(t.type)==='Bug/Error') bugMon[m]=(bugMon[m]||0)+1;
+    if (TICKET_TYPE(t.type)==='Ayuda FE')  feMon[m] =(feMon[m] ||0)+1;
+  });
+  const mKeys = [...new Set([...Object.keys(bugMon),...Object.keys(feMon)])].sort().slice(-8);
+  mkChart('lineBugs',{type:'line',data:{labels:mKeys.map(MONTH_LABEL),datasets:[
+    {label:'Bug/Error',data:mKeys.map(m=>bugMon[m]||0),borderColor:'#E83A5A',backgroundColor:'rgba(232,58,90,0.08)',pointBackgroundColor:'#E83A5A',pointRadius:4,tension:0.3,borderWidth:2,fill:true},
+    {label:'Ayuda FE',data:mKeys.map(m=>feMon[m]||0),borderColor:'#F5A623',backgroundColor:'transparent',pointBackgroundColor:'#F5A623',pointRadius:3,tension:0.3,borderWidth:2,borderDash:[5,5]}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11,family:"'Montserrat'"},color:'#636B7D',usePointStyle:true}}},scales:{x:{grid:{display:false},ticks:{font:{size:10,family:"'Montserrat'"},color:TICK_CLR}},y:{grid:{color:GRID_CLR},border:{display:false},ticks:{font:{size:10,family:"'Montserrat'"},color:TICK_CLR}}}}});
+
+  // Platform bar
+  const platC = tk.reduce((a,t)=>{ const p=(t.platform||'Otro').trim()||'Otro'; a[p]=(a[p]||0)+1; return a;},{});
+  const platS = Object.entries(platC).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const platColors={'Web':'#1B2A5C','Mobile App':'#27AE60','Smart PRO':'#F5A623'};
+  mkChart('barPlatform',{type:'bar',data:{labels:platS.map(([p])=>p),datasets:[{data:platS.map(([,c])=>c),backgroundColor:platS.map(([p])=>platColors[p]||'#4A90D9'),borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10,family:"'Montserrat'"},color:TICK_CLR}},y:{grid:{color:GRID_CLR},border:{display:false},ticks:{font:{size:10,family:"'Montserrat'"},color:TICK_CLR}}}}});
+
+  // Topics
+  const topics = [
+    {label:'Bugs / Errores UI', kws:['no permite','error','no carga','no funciona','no aparece','falla'], color:'var(--bold-red)'},
+    {label:'Factura Electrónica', kws:['factura','fe ','resolución','dian','cufe','habilitac','nota credito'], color:'var(--bold-gold)'},
+    {label:'Reportes / Dashboard', kws:['reporte','dashboard','turno','cxc','ganancias'], color:'var(--bold-blue)'},
+    {label:'Inventario / Items', kws:['inventario','item','items','stock','producto'], color:'var(--bold-navy)'},
+    {label:'Usuarios / Permisos', kws:['usuario','user','rol','permiso'], color:'var(--bold-purple)'},
+    {label:'Configuración', kws:['configurac','setup','numerac'], color:'var(--bold-green)'},
+  ];
+  const topicCounts = topics.map(tp => ({ ...tp, count: tk.filter(t=>tp.kws.some(k=>(t.description||'').toLowerCase().includes(k))).length }));
+  const maxTC = Math.max(...topicCounts.map(t=>t.count), 1);
+  document.getElementById('topicsGrid').innerHTML = topicCounts.map(tp =>
+    `<div class="pb-wrap"><div class="pb-header"><span class="pb-label">${tp.label}</span><span class="pb-val">${tp.count}</span></div><div class="pb"><div class="pb-fill" style="width:${Math.round(tp.count/maxTC*100)}%;background:${tp.color};"></div></div></div>`
+  ).join('');
+
+  // Recent tickets
+  const recent = [...tk].slice(-20).reverse();
+  document.querySelector('#recentTable tbody').innerHTML = recent.map(t=>
+    `<tr><td style="font-weight:600;font-size:12px;">${TRUNC(t.commerce,28)}</td><td style="font-size:11px;max-width:280px;color:var(--gray-600);">${TRUNC(t.description,85)}</td><td><span class="badge b-navy" style="font-size:10px;">${t.platform||'—'}</span></td><td><span class="badge ${TICKET_TYPE(t.type)==='Bug/Error'?'b-red':'b-gold'}" style="font-size:10px;">${TICKET_TYPE(t.type)}</span></td><td style="font-size:11px;color:var(--gray-400);">${t.month||''}</td></tr>`
+  ).join('');
+}
+
+// ─────────────────────────────────────────────
+// RENDER — CORRELACIÓN
+// ─────────────────────────────────────────────
+function renderCorrelation() {
+  const bl = S.backlog, tk = S.tickets;
+  const painData = computePainScores();
+  const painColors = ['#E83A5A','#E83A5A','#E83A5A','#F5A623','#F5A623','#F5A623','#4A90D9','#4A90D9','#27AE60'];
+
+  // Pain cards
+  document.getElementById('painCards').innerHTML = painData.slice(0,9).map((d,i)=>`
+    <div class="pain-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="font-size:12px;font-weight:700;">${d.mod}</div>
+        ${d.churn>0?'<span class="badge b-red" style="font-size:10px;">⚠️ Churn</span>':''}
+      </div>
+      <div class="pain-score" style="color:${painColors[i]||'#4A90D9'}">${d.score}</div>
+      <div style="font-size:11px;color:var(--gray-400);margin-top:4px;">Requests: ${d.demand} · Tickets: ${d.tickets}</div>
+      <div class="pain-bar-outer"><div class="pain-bar-inner" style="width:${d.score}%;background:${painColors[i]||'#4A90D9'};"></div></div>
+    </div>`
+  ).join('');
+
+  // Bubble chart
+  mkChart('bubbleChart',{type:'bubble',data:{datasets:painData.slice(0,10).map((d,i)=>({label:d.mod,data:[{x:d.demand,y:d.tickets,r:Math.max(d.score/5,4)}],backgroundColor:`hsla(${i*36},70%,55%,0.7)`,borderColor:`hsla(${i*36},70%,40%,1)`,borderWidth:1}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10,family:"'Montserrat'"},color:'#636B7D',boxWidth:10}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: Req=${ctx.raw.x}, Tickets=${ctx.raw.y}`}}},scales:{x:{title:{display:true,text:'Requests en Backlog',font:{size:11,family:"'Montserrat'"},color:TICK_CLR},grid:{color:GRID_CLR},ticks:{font:{size:10,family:"'Montserrat'"},color:TICK_CLR}},y:{title:{display:true,text:'Tickets de Soporte',font:{size:11,family:"'Montserrat'"},color:TICK_CLR},grid:{color:GRID_CLR},border:{display:false},ticks:{font:{size:10,family:"'Montserrat'"},color:TICK_CLR}}}}});
+
+  // Shared commerces
+  const blNames = new Set(bl.flatMap(r=>String(r.names||'').split(',').map(n=>n.trim().toLowerCase()).filter(n=>n.length>4)));
+  const shared = [];
+  tk.forEach(t => {
+    const tc = String(t.commerce||'').trim().toLowerCase();
+    if (tc.length < 4) return;
+    const match = [...blNames].find(bn => tc.includes(bn.substring(0,6)) || bn.includes(tc.substring(0,6)));
+    if (match && !shared.find(s=>s.tk===tc)) shared.push({tk:t.commerce, bl:match});
+  });
+  document.getElementById('sharedCommerces').innerHTML = shared.length ?
+    shared.slice(0,10).map(s=>`<div class="lr"><div style="width:8px;height:8px;border-radius:50%;background:var(--bold-red);flex-shrink:0;"></div><div class="lr-main"><div class="lr-title" style="font-size:12px;">${s.tk}</div><div class="lr-sub">También en backlog</div></div><span class="badge b-red" style="font-size:10px;">Riesgo</span></div>`).join('') :
+    '<div style="font-size:12px;color:var(--gray-400);padding:12px 0;">No se detectaron coincidencias con suficiente certeza. Los nombres deben ser similares entre los dos Sheets para que se detecten.</div>';
+
+  // Correlation table
+  const getPainScore = mod => getPain(mod, painData);
+  const topBl = [...bl].filter(r=>r.noRequests>0).sort((a,b)=>b.noRequests-a.noRequests).slice(0,20);
+  const corrRows = topBl.map(r => {
+    const words = String(r.request||'').toLowerCase().split(/\s+/).filter(w=>w.length>4);
+    const relTk = tk.filter(t=>words.some(w=>(t.description||'').toLowerCase().includes(w))).length;
+    const pain = getPainScore(r.module);
+    const churn = IS_CHURN(r.notes);
+    const priority = churn||pain>60 ? 'Inmediata' : pain>35 ? 'Alta' : pain>15 ? 'Media' : 'Normal';
+    const prioC = {Inmediata:'b-red',Alta:'b-gold',Media:'b-blue',Normal:'b-gray'};
+    return {r,relTk,pain,priority,prioC,churn};
+  }).sort((a,b)=>b.relTk-a.relTk||b.pain-a.pain);
+
+  document.querySelector('#corrTable tbody').innerHTML = corrRows.map(({r,relTk,pain,priority,prioC,churn})=>
+    `<tr><td style="font-size:12px;max-width:220px;">${TRUNC(r.request,65)}</td><td><span class="badge b-navy" style="font-size:10px;">${TRUNC(r.module,20)}</span></td><td><strong>${r.noRequests}</strong></td><td><strong style="color:${relTk>5?'var(--bold-red)':relTk>2?'#B07000':'var(--bold-navy)'};">${relTk}</strong></td><td><strong>${pain}</strong></td><td><span class="badge ${prioC[priority]}">${priority}</span>${churn?'<span class="badge b-red" style="margin-left:4px;font-size:10px;">Churn</span>':''}</td></tr>`
+  ).join('');
+
+  // Clean opps & double debt
+  const clean = painData.filter(d=>d.demand>5&&d.tickets<5).sort((a,b)=>b.demand-a.demand).slice(0,5);
+  document.getElementById('cleanOpps').innerHTML = clean.length ?
+    clean.map(d=>`<div class="lr"><div class="lr-rank" style="background:var(--bold-green-light);color:var(--bold-green);">✓</div><div class="lr-main"><div class="lr-title">${d.mod}</div><div class="lr-sub">${d.demand} requests · ${d.tickets} tickets</div></div></div>`).join('') :
+    '<div style="font-size:12px;color:var(--gray-400);padding:8px 0;">Todos los módulos con alta demanda tienen tickets asociados.</div>';
+
+  const debt = painData.filter(d=>d.demand>5&&d.tickets>5).sort((a,b)=>b.score-a.score).slice(0,5);
+  document.getElementById('doubleDebt').innerHTML = debt.length ?
+    debt.map(d=>`<div class="lr"><div class="lr-rank" style="background:var(--bold-red-light);color:var(--bold-red);">!</div><div class="lr-main"><div class="lr-title">${d.mod}</div><div class="lr-sub">${d.demand} requests · ${d.tickets} tickets · Pain: ${d.score}</div></div><span class="badge b-red">Doble deuda</span></div>`).join('') :
+    '<div style="font-size:12px;color:var(--gray-400);padding:8px 0;">No se detectaron módulos con deuda doble significativa.</div>';
+}
+
+// ─────────────────────────────────────────────
+// RENDER — GAPS
+// ─────────────────────────────────────────────
+function renderGaps() {
+  const bl = S.backlog;
+  const churnItems = bl.filter(r=>IS_CHURN(r.notes)).sort((a,b)=>b.noRequests-a.noRequests);
+
+  document.getElementById('churnContainer').innerHTML = `
+    <div class="ab crit"><div class="ab-icon">🚨</div><div><div class="ab-title">${churnItems.length} features con riesgo de churn documentado</div><div class="ab-text">Menciones de "comercio se pierde", "solicita devolución" o "no toma el programa" detectadas en notas.</div></div></div>
+    <div class="g2" style="margin-bottom:24px;">${churnItems.slice(0,4).map(r=>`
+      <div style="background:var(--bold-red-light);border-radius:var(--radius-md);padding:14px;border-left:3px solid var(--bold-red);">
+        <div style="font-size:12px;font-weight:700;color:var(--bold-red);">🔴 ${r.module} — ${r.noRequests} requests</div>
+        <div style="font-size:11px;color:var(--gray-600);margin-top:4px;line-height:1.5;">${TRUNC(r.request,120)}</div>
+        <div style="margin-top:8px;">${STATUS_BADGE(r.status)}</div>
+      </div>`).join('')}
+    </div>
+  `;
+
+  const highPending = [...bl].filter(r=>r.noRequests>=5&&STATUS_NORM(r.status)==='Pendiente').sort((a,b)=>b.noRequests-a.noRequests).slice(0,6);
+  document.getElementById('missingMods').innerHTML = highPending.map(r=>`
+    <div style="background:#fff;border:var(--border);border-radius:var(--radius-lg);padding:18px;border-left:4px solid var(--bold-gold);">
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px;">${TRUNC(r.request,60)}</div>
+      <div style="font-size:12px;color:var(--gray-600);margin-bottom:10px;">${r.module} · ${r.noRequests} requests${IS_CHURN(r.notes)?' · <strong style="color:var(--bold-red);">⚠️ Churn</strong>':''}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="badge b-gold">Pendiente</span><span class="badge b-navy">${r.noRequests} reqs</span></div>
+    </div>`).join('');
+}
+
+// ─────────────────────────────────────────────
+// RENDER — ROADMAP
+// ─────────────────────────────────────────────
+function renderRoadmap() {
+  const bl = S.backlog, tk = S.tickets;
+  const painData = computePainScores();
+
+  const scored = bl
+    .filter(r=>STATUS_NORM(r.status)!=='Rechazado')
+    .map(r => {
+      const churn = IS_CHURN(r.notes) ? 30 : 0;
+      const regulatory = /dian|retefuente|reteica|nómina|nomina/.test((r.request||'').toLowerCase()) ? 20 : 0;
+      const pain = getPain(r.module, painData);
+      const total = r.riceScore*2 + r.noRequests + pain + churn + regulatory;
+      return { ...r, total, churn: IS_CHURN(r.notes), pain, inDev: STATUS_NORM(r.status)==='En Desarrollo' };
+    })
+    .sort((a,b) => b.total - a.total);
+
+  const classify = (item, rank) => {
+    if (item.inDev || item.churn || rank < 3) return 'must';
+    const max = scored[0]?.total || 1;
+    if (item.total > max*0.5) return 'should';
+    if (item.total > max*0.25) return 'could';
+    return 'nice';
+  };
+
+  const slices = [scored.slice(0,6), scored.slice(6,12), scored.slice(12,18), scored.slice(18,24)];
+  const qMeta = [
+    ['#1B2A5C','Q1 — May/Jul 2026','Estabilización + Churn blockers'],
+    ['#4A90D9','Q2 — Ago/Oct 2026','Expansión inventario y compras'],
+    ['#7B5EA7','Q3 — Nov 26 / Ene 27','Regulatorio + Integraciones'],
+    ['#27AE60','Q4 — Feb/Abr 2027','Crecimiento y verticales'],
+  ];
+  const prioBadge = p => {const l={must:'Must Have',should:'Should Have',could:'Could Have',nice:'Nice to Have'};return `<span class="badge b-${p==='must'?'red':p==='should'?'gold':p==='could'?'blue':'green'}">${l[p]}</span>`;};
+
+  document.getElementById('roadmapBody').innerHTML = slices.map((items, qi) => `
+    <div class="rm-quarter">
+      <div class="rm-qheader">
+        <span class="rm-qpill" style="background:${qMeta[qi][0]};">${qMeta[qi][1]}</span>
+        <div class="rm-qline"></div>
+        <span style="font-size:12px;color:var(--gray-400);font-weight:600;">${qMeta[qi][2]}</span>
+      </div>
+      <div class="rm-grid">${items.map((r,i)=>{
+        const prio = classify(r, i+qi*6);
+        return `<div class="rm-item ${prio}">
+          <div class="rm-title">${TRUNC(r.request,68)}</div>
+          <div class="rm-desc">${r.module} · ${r.noRequests>0?r.noRequests+' requests · ':''}Pain: ${r.pain}</div>
+          <div class="rm-meta">
+            ${prioBadge(prio)}
+            ${r.riceScore>0?`<span class="badge b-green" style="font-size:10px;">RICE ${r.riceScore.toFixed(1)}</span>`:''}
+            ${r.churn?'<span class="badge b-red" style="font-size:10px;">⚠️ Churn</span>':''}
+            ${r.inDev?'<span class="badge b-green" style="font-size:10px;">🔨 En Desarrollo</span>':''}
+          </div>
+        </div>`;
+      }).join('')}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('roadmapSub').textContent = `${scored.length} items priorizados automáticamente · Recalculado ${new Date().toLocaleString('es-CO')}`;
+}
+
+// ─────────────────────────────────────────────
+// MAIN LOAD
+// ─────────────────────────────────────────────
+async function loadAllData() {
+  if (!S.token) return;
+  const btn = document.getElementById('refreshBtn');
+  const overlay = document.getElementById('loadingOverlay');
+  const bar = document.getElementById('loadingBar');
+  const errBanner = document.getElementById('errorBanner');
+
+  btn.classList.add('loading');
+  btn.textContent = '⟳ Cargando...';
+  overlay.classList.remove('hidden');
+  errBanner.style.display = 'none';
+
+  const prog = (pct, msg) => {
+    bar.style.width = pct+'%';
+    if (msg) document.getElementById('loadingStatus').textContent = msg;
+  };
+
+  try {
+    prog(10, 'Leyendo Backlog de Features...');
+    const rawBl = await fetchSheet(SHEET_BACKLOG.id, SHEET_BACKLOG.tab);
+    S.backlog = rawBl.map(mapBacklog).filter(r => r.module || r.request);
+    prog(45, `${S.backlog.length} features cargados. Leyendo tickets...`);
+
+    const rawTk = await fetchSheet(SHEET_TICKETS.id, SHEET_TICKETS.tab);
+    S.tickets = rawTk.map(mapTicket).filter(t => t.description || t.commerce);
+    prog(80, `${S.tickets.length} tickets cargados. Calculando insights...`);
+
+    document.getElementById('liveDot').style.display = 'inline';
+    document.getElementById('lastUpdated').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-CO');
+
+    prog(88, 'Renderizando Overview...');   renderOverview();
+    prog(91, 'Renderizando Backlog...');    renderBacklog();
+    prog(94, 'Renderizando Soporte...');    renderTickets();
+    prog(96, 'Calculando correlaciones...'); renderCorrelation();
+    prog(98, 'Analizando gaps...');         renderGaps();
+    prog(99, 'Generando roadmap...');       renderRoadmap();
+    prog(100, '¡Listo!');
+
+    setTimeout(() => overlay.classList.add('hidden'), 500);
+
+    // AI Insights corre en background, no bloquea el dashboard
+    loadAIInsights();
+
+  } catch (err) {
+    overlay.classList.add('hidden');
+    if (err.message === 'TOKEN_EXPIRED') {
+      // Silently refresh token
+      S.token = null;
+      sessionStorage.removeItem('bold_token');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('errorTitle').textContent = 'Sesión expirada';
+      document.getElementById('errorDetail').textContent = 'Tu token de Google expiró. Inicia sesión nuevamente.';
+    } else {
+      document.getElementById('errorTitle').textContent = 'Error al cargar datos';
+      document.getElementById('errorDetail').textContent = err.message + '. Verifica que tienes acceso a los Google Sheets.';
+    }
+    errBanner.style.display = 'flex';
+    console.error(err);
+  }
+
+  btn.classList.remove('loading');
+  btn.textContent = '⟳ Refresh';
+}
+
+
+// ─────────────────────────────────────────────
+// AI INSIGHTS — llama al proxy de Vercel
+// ─────────────────────────────────────────────
+async function loadAIInsights() {
+  const loading  = document.getElementById('aiLoading');
+  const error    = document.getElementById('aiError');
+  const resumen  = document.getElementById('aiResumen');
+
+  loading.style.display  = 'block';
+  error.style.display    = 'none';
+  resumen.style.display  = 'none';
+  document.getElementById('aiAlertas').innerHTML      = '';
+  document.getElementById('aiOportunidades').innerHTML = '';
+  document.getElementById('aiInsights').innerHTML     = '';
+  document.querySelector('#aiRoadmapTable tbody').innerHTML = '';
+
+  try {
+    const topBacklog = [...S.backlog].filter(r=>r.noRequests>0).sort((a,b)=>b.noRequests-a.noRequests).slice(0,30);
+    const backlogSummary = `Total items: ${S.backlog.length}
+Total requests acumulados: ${S.backlog.reduce((s,r)=>s+r.noRequests,0)}
+Items en desarrollo: ${S.backlog.filter(r=>STATUS_NORM(r.status)==='En Desarrollo').length}
+Items pendientes: ${S.backlog.filter(r=>STATUS_NORM(r.status)==='Pendiente').length}
+Items con riesgo churn: ${S.backlog.filter(r=>IS_CHURN(r.notes)).length}
+
+TOP 30 ITEMS POR DEMANDA:
+${topBacklog.map(r=>`- [${r.module}] ${r.request} | Requests: ${r.noRequests} | RICE: ${r.riceScore||'N/A'} | Estado: ${STATUS_NORM(r.status)}${IS_CHURN(r.notes)?' | ⚠️ CHURN RISK':''}${r.notes?` | Notas: ${String(r.notes).substring(0,80)}`:''}`).join('\n')}`;
+
+    const bugCount = S.tickets.filter(t=>TICKET_TYPE(t.type)==='Bug/Error').length;
+    const feCount  = S.tickets.filter(t=>TICKET_TYPE(t.type)==='Ayuda FE').length;
+    const tkByModule = {};
+    S.tickets.forEach(t=>{ const m=DETECT_MODULE(t.description); tkByModule[m]=(tkByModule[m]||0)+1; });
+    const ticketsSummary = `Total tickets: ${S.tickets.length}
+Bugs/Errores: ${bugCount} (${Math.round(bugCount/S.tickets.length*100)}%)
+Ayuda FE: ${feCount} (${Math.round(feCount/S.tickets.length*100)}%)
+
+TICKETS POR MÓDULO:
+${Object.entries(tkByModule).sort((a,b)=>b[1]-a[1]).map(([m,c])=>`- ${m}: ${c} tickets`).join('\n')}
+
+ÚLTIMOS 50 TICKETS:
+${[...S.tickets].slice(-50).map(t=>`- [${t.platform||'?'}][${TICKET_TYPE(t.type)}] ${String(t.description||'').substring(0,100)}`).join('\n')}`;
+
+    const response = await fetch(AI_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ backlogSummary, ticketsSummary })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(()=>({error:`HTTP ${response.status}`}));
+      throw new Error(err.error || `HTTP ${response.status}`);
+    }
+
+    const ai = await response.json();
+    loading.style.display = 'none';
+    renderAIInsights(ai);
+
+  } catch (err) {
+    loading.style.display = 'none';
+    error.style.display = 'block';
+    document.getElementById('aiErrorText').textContent = `${err.message}. Verifica que el Vercel function esté desplegado y la variable ANTHROPIC_API_KEY esté configurada.`;
+    console.error('AI Insights error:', err);
+  }
+}
+
+function renderAIInsights(ai) {
+  document.getElementById('aiResumenText').textContent = ai.resumenEjecutivo || '';
+  document.getElementById('aiTimestamp').textContent = 'Generado: ' + new Date().toLocaleString('es-CO');
+  document.getElementById('aiResumen').style.display = 'block';
+
+  const tipoMap  = { critica:'crit', advertencia:'warn', info:'info' };
+  const tipoIcon = { critica:'🚨', advertencia:'⚡', info:'ℹ️' };
+  document.getElementById('aiAlertas').innerHTML = (ai.alertasCriticas||[]).map(a=>`
+    <div class="ab ${tipoMap[a.tipo]||'warn'}" style="margin-bottom:10px;">
+      <div class="ab-icon">${tipoIcon[a.tipo]||'⚡'}</div>
+      <div><div class="ab-title">${a.titulo}</div><div class="ab-text">${a.descripcion}</div></div>
+    </div>`).join('');
+
+  document.getElementById('aiOportunidades').innerHTML = (ai.oportunidadesNoVistas||[]).map(o=>`
+    <div style="background:#fff;border:var(--border);border-radius:var(--radius-lg);padding:16px;border-left:4px solid var(--bold-purple);margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💡 ${o.titulo}</div>
+      <div style="font-size:12px;color:var(--gray-600);line-height:1.6;">${o.descripcion}</div>
+    </div>`).join('');
+
+  const impactoColor = { alto:'b-red', medio:'b-gold', bajo:'b-blue' };
+  document.getElementById('aiInsights').innerHTML = (ai.insightsCorrelacion||[]).map(i=>`
+    <div style="background:#fff;border:var(--border);border-radius:var(--radius-lg);padding:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:700;">🔗 ${i.titulo}</div>
+        <span class="badge ${impactoColor[i.impacto]||'b-gray'}">${i.impacto}</span>
+      </div>
+      <div style="font-size:12px;color:var(--gray-600);line-height:1.6;">${i.descripcion}</div>
+    </div>`).join('');
+
+  const qColor = { Q1:'b-red', Q2:'b-gold', Q3:'b-blue', Q4:'b-green' };
+  document.querySelector('#aiRoadmapTable tbody').innerHTML = (ai.recomendacionesRoadmap||[]).map((r,i)=>`
+    <tr>
+      <td><strong>${i+1}</strong></td>
+      <td style="font-weight:600;font-size:13px;">${r.feature}</td>
+      <td><span class="badge ${qColor[r.trimestre]||'b-gray'}">${r.trimestre}</span></td>
+      <td style="font-size:12px;color:var(--gray-600);line-height:1.5;">${r.justificacion}</td>
+    </tr>`).join('');
+}
+
+// ─────────────────────────────────────────────
+// NAV + AUTO REFRESH
+// ─────────────────────────────────────────────
+function showTab(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+setInterval(() => { if (S.token) loadAllData(); }, REFRESH_MS);
+</script>
+</body>
+</html>
