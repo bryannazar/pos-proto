@@ -1166,15 +1166,15 @@ async function loadAIInsights() {
   document.querySelector('#aiRoadmapTable tbody').innerHTML = '';
 
   try {
-    const topBacklog = [...S.backlog].filter(r=>r.noRequests>0).sort((a,b)=>b.noRequests-a.noRequests).slice(0,30);
+    const topBacklog = [...S.backlog].filter(r=>r.noRequests>0).sort((a,b)=>b.noRequests-a.noRequests).slice(0,15);
     const backlogSummary = `Total items: ${S.backlog.length}
 Total requests acumulados: ${S.backlog.reduce((s,r)=>s+r.noRequests,0)}
 Items en desarrollo: ${S.backlog.filter(r=>STATUS_NORM(r.status)==='En Desarrollo').length}
 Items pendientes: ${S.backlog.filter(r=>STATUS_NORM(r.status)==='Pendiente').length}
 Items con riesgo churn: ${S.backlog.filter(r=>IS_CHURN(r.notes)).length}
 
-TOP 30 ITEMS POR DEMANDA:
-${topBacklog.map(r=>`- [${r.module}] ${r.request} | Requests: ${r.noRequests} | RICE: ${r.riceScore||'N/A'} | Estado: ${STATUS_NORM(r.status)}${IS_CHURN(r.notes)?' | ⚠️ CHURN RISK':''}${r.notes?` | Notas: ${String(r.notes).substring(0,80)}`:''}`).join('\n')}`;
+TOP 15 ITEMS POR DEMANDA:
+${topBacklog.map(r=>`- [${r.module}] ${r.request} | Reqs: ${r.noRequests} | Estado: ${STATUS_NORM(r.status)}${IS_CHURN(r.notes)?' | CHURN':''}`).join('\n')}`;
 
     const bugCount = S.tickets.filter(t=>TICKET_TYPE(t.type)==='Bug/Error').length;
     const feCount  = S.tickets.filter(t=>TICKET_TYPE(t.type)==='Ayuda FE').length;
@@ -1185,10 +1185,10 @@ Bugs/Errores: ${bugCount} (${Math.round(bugCount/S.tickets.length*100)}%)
 Ayuda FE: ${feCount} (${Math.round(feCount/S.tickets.length*100)}%)
 
 TICKETS POR MÓDULO:
-${Object.entries(tkByModule).sort((a,b)=>b[1]-a[1]).map(([m,c])=>`- ${m}: ${c} tickets`).join('\n')}
+${Object.entries(tkByModule).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([m,c])=>`- ${m}: ${c}`).join('\n')}
 
-ÚLTIMOS 50 TICKETS:
-${[...S.tickets].slice(-50).map(t=>`- [${t.platform||'?'}][${TICKET_TYPE(t.type)}] ${String(t.description||'').substring(0,100)}`).join('\n')}`;
+ÚLTIMOS 20 TICKETS:
+${[...S.tickets].slice(-20).map(t=>`- [${TICKET_TYPE(t.type)}] ${String(t.description||'').substring(0,60)}`).join('\n')}`;
 
     const response = await fetch(AI_ENDPOINT, {
       method: 'POST',
