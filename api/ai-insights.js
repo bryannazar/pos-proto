@@ -64,10 +64,10 @@ export default async function handler(req, res) {
   }
   
   Reglas:
-  - alertasCriticas: máximo 3, solo las más urgentes. tipo puede ser "critica", "advertencia" o "info"
-  - insightsCorrelacion: máximo 4, enfocados en patrones que cruzan backlog Y tickets
-  - recomendacionesRoadmap: máximo 5, ordenados por prioridad real. trimestre: Q1, Q2, Q3 o Q4
-  - oportunidadesNoVistas: máximo 3, las más estratégicas
+  - alertasCriticas: máximo 2, solo las más urgentes. tipo puede ser "critica", "advertencia" o "info"
+  - insightsCorrelacion: máximo 2, enfocados en patrones que cruzan backlog Y tickets
+  - recomendacionesRoadmap: máximo 3, ordenados por prioridad real. trimestre: Q1, Q2, Q3 o Q4
+  - oportunidadesNoVistas: máximo 2, las más estratégicas
   - impacto puede ser: "alto", "medio" o "bajo"
   - Usa datos concretos (números, nombres de módulos, porcentajes) en las descripciones
   - No repitas lo obvio, busca patrones no evidentes
@@ -87,7 +87,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           model: 'claude-haiku-4-5',
-          max_tokens: 800,
+          max_tokens: 1100,
           messages: [{ role: 'user', content: prompt }]
         }),
         signal: controller.signal
